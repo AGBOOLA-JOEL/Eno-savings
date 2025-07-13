@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -39,6 +39,9 @@ interface AdminDashboardProps {
     id: string;
     name: string | null;
     email: string | null;
+    phone: string | null;
+    goal: number | null;
+    frequency: string | null;
     savings: Array<{
       id: string;
       amount: number;
@@ -61,6 +64,8 @@ export default function AdminDashboard({
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [savingsSearch, setSavingsSearch] = useState("");
 
   const totalUsers = users.length;
   const totalSavings = users.reduce(
@@ -69,6 +74,40 @@ export default function AdminDashboard({
       user.savings.reduce((userSum, saving) => userSum + saving.amount, 0),
     0
   );
+
+  // Filtered users for summary table
+  const filteredUsers = useMemo(() => {
+    if (!userSearch.trim()) return users;
+    const q = userSearch.trim().toLowerCase();
+    return users.filter(
+      (user) =>
+        (user.name && user.name.toLowerCase().includes(q)) ||
+        (user.email && user.email.toLowerCase().includes(q)) ||
+        (user.phone && user.phone.toLowerCase().includes(q))
+    );
+  }, [users, userSearch]);
+
+  // All savings for recent transactions, with user info
+  const allSavings = useMemo(
+    () =>
+      users.flatMap((user) =>
+        user.savings.map((saving) => ({ ...saving, user }))
+      ),
+    [users]
+  );
+
+  // Filtered savings for recent transactions
+  const filteredSavings = useMemo(() => {
+    if (!savingsSearch.trim()) return allSavings;
+    const q = savingsSearch.trim().toLowerCase();
+    return allSavings.filter(
+      (saving) =>
+        (saving.description && saving.description.toLowerCase().includes(q)) ||
+        saving.amount.toString().includes(q) ||
+        (saving.user.name && saving.user.name.toLowerCase().includes(q)) ||
+        (saving.user.email && saving.user.email.toLowerCase().includes(q))
+    );
+  }, [allSavings, savingsSearch]);
 
   const handleAddSaving = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +156,6 @@ export default function AdminDashboard({
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <PiggyBank className="h-8 w-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Admin Dashboard
@@ -255,18 +293,28 @@ export default function AdminDashboard({
               <CardDescription>
                 Overview of all users and their savings
               </CardDescription>
+              <Input
+                placeholder="Search users by name, email, or phone..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="mt-2"
+              />
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Goal</TableHead>
+                    <TableHead>Frequency</TableHead>
                     <TableHead>Total Savings</TableHead>
                     <TableHead>Entries</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => {
+                  {filteredUsers.map((user) => {
                     const userTotal = user.savings.reduce(
                       (sum, saving) => sum + saving.amount,
                       0
@@ -274,15 +322,21 @@ export default function AdminDashboard({
                     return (
                       <TableRow key={user.id}>
                         <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {user.name || "No name"}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {user.email}
-                            </p>
+                          <div className="font-medium">
+                            {user.name || "No name"}
                           </div>
                         </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.phone || "-"}</TableCell>
+                        <TableCell>
+                          {user.goal != null
+                            ? user.goal.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            : "-"}
+                        </TableCell>
+                        <TableCell>{user.frequency || "-"}</TableCell>
                         <TableCell>
                           ₦
                           {userTotal.toLocaleString(undefined, {
@@ -307,6 +361,12 @@ export default function AdminDashboard({
             <CardDescription>
               Latest savings entries across all users
             </CardDescription>
+            <Input
+              placeholder="Search savings by description, amount, or user..."
+              value={savingsSearch}
+              onChange={(e) => setSavingsSearch(e.target.value)}
+              className="mt-2"
+            />
           </CardHeader>
           <CardContent>
             <Table>
@@ -319,10 +379,7 @@ export default function AdminDashboard({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users
-                  .flatMap((user) =>
-                    user.savings.map((saving) => ({ ...saving, user }))
-                  )
+                {filteredSavings
                   .sort(
                     (a, b) =>
                       new Date(b.createdAt).getTime() -
@@ -338,6 +395,9 @@ export default function AdminDashboard({
                           </p>
                           <p className="text-sm text-gray-500">
                             {saving.user.email}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {saving.user.phone || "-"}
                           </p>
                         </div>
                       </TableCell>

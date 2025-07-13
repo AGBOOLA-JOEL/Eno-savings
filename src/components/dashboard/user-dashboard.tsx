@@ -70,7 +70,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <PiggyBank className="h-8 w-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Welcome back, {user.name}
@@ -122,7 +121,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
               </div>
               {user.goal && <Progress value={goalProgress} className="mt-2" />}
               <p className="text-xs text-muted-foreground mt-2">
-                {user.goal ? `Goal: $${user.goal.toFixed(2)}` : "No goal set"}
+                {user.goal ? `Goal: #${user.goal.toFixed(2)}` : "No goal set"}
               </p>
             </CardContent>
           </Card>
