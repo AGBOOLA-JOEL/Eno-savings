@@ -1,48 +1,67 @@
-"use client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
-import { PiggyBank, TrendingUp, Target, Trophy } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { format } from "date-fns"
-import { signOut } from "next-auth/react"
+"use client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { PiggyBank, TrendingUp, Target, Trophy } from "lucide-react";
+import { FaNairaSign } from "react-icons/fa6";
+
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { format } from "date-fns";
+import { signOut } from "next-auth/react";
 
 interface UserDashboardProps {
   user: {
-    id: string
-    name: string | null
-    email: string | null
-    goal: number | null
+    id: string;
+    name: string | null;
+    email: string | null;
+    goal: number | null;
     savings: Array<{
-      id: string
-      amount: number
-      createdAt: Date
-      description: string | null
-    }>
-  }
+      id: string;
+      amount: number;
+      createdAt: Date;
+      description: string | null;
+    }>;
+  };
 }
 
 export default function UserDashboard({ user }: UserDashboardProps) {
-  const totalSavings = user.savings.reduce((sum, saving) => sum + saving.amount, 0)
-  const goalProgress = user.goal ? (totalSavings / user.goal) * 100 : 0
+  const totalSavings = user.savings.reduce(
+    (sum, saving) => sum + saving.amount,
+    0
+  );
+  const goalProgress = user.goal ? (totalSavings / user.goal) * 100 : 0;
 
   // Prepare chart data
   const chartData = user.savings
     .slice()
     .reverse()
-    .reduce(
-      (acc, saving, index) => {
-        const runningTotal = acc.length > 0 ? acc[acc.length - 1].total + saving.amount : saving.amount
-        acc.push({
-          date: format(new Date(saving.createdAt), "MMM dd"),
-          total: runningTotal,
-          amount: saving.amount,
-        })
-        return acc
-      },
-      [] as Array<{ date: string; total: number; amount: number }>,
-    )
+    .reduce((acc, saving, index) => {
+      const runningTotal =
+        acc.length > 0
+          ? acc[acc.length - 1].total + saving.amount
+          : saving.amount;
+      acc.push({
+        date: format(new Date(saving.createdAt), "MMM dd"),
+        total: runningTotal,
+        amount: saving.amount,
+      });
+      return acc;
+    }, [] as Array<{ date: string; total: number; amount: number }>);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,7 +72,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
             <div className="flex items-center space-x-3">
               <PiggyBank className="h-8 w-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Welcome back, {user.name}
+                </h1>
                 <p className="text-gray-600">Track your savings progress</p>
               </div>
             </div>
@@ -69,22 +90,36 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Savings
+              </CardTitle>
               <PiggyBank className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalSavings.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">{user.savings.length} deposits made</p>
+              <div className="text-2xl font-bold">
+                <FaNairaSign className="inline-block w-6 h-6 mr-1 align-middle text-[hsl(var(--primary))]" />
+                {totalSavings.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {user.savings.length} deposits made
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Goal Progress</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Goal Progress
+              </CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{goalProgress.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">
+                {goalProgress.toFixed(1)}%
+              </div>
               {user.goal && <Progress value={goalProgress} className="mt-2" />}
               <p className="text-xs text-muted-foreground mt-2">
                 {user.goal ? `Goal: $${user.goal.toFixed(2)}` : "No goal set"}
@@ -94,12 +129,21 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Deposit</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Average Deposit
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${user.savings.length > 0 ? (totalSavings / user.savings.length).toFixed(2) : "0.00"}
+                <FaNairaSign className="inline-block w-6 h-6 mr-1 align-middle text-[hsl(var(--primary))]" />
+
+                {user.savings.length > 0
+                  ? (totalSavings / user.savings.length).toLocaleString(
+                      undefined,
+                      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                    )
+                  : "0.00"}
               </div>
               <p className="text-xs text-muted-foreground">Per transaction</p>
             </CardContent>
@@ -118,7 +162,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Savings Growth</CardTitle>
-                <CardDescription>Your savings progress over time</CardDescription>
+                <CardDescription>
+                  Your savings progress over time
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {chartData.length > 0 ? (
@@ -127,7 +173,15 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
-                      <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Total Savings"]} />
+                      <Tooltip
+                        formatter={(value: number) => [
+                          `#${value.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`,
+                          "Total Savings",
+                        ]}
+                      />
                       <Line
                         type="monotone"
                         dataKey="total"
@@ -156,20 +210,39 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                 {user.savings.length > 0 ? (
                   <div className="space-y-4">
                     {user.savings.map((saving) => (
-                      <div key={saving.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={saving.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
                         <div>
-                          <p className="font-medium">${saving.amount.toFixed(2)}</p>
-                          {saving.description && <p className="text-sm text-gray-600">{saving.description}</p>}
+                          <p className="font-medium">
+                            <FaNairaSign className="inline-block w-6 h-6 mr-1 align-middle text-[hsl(var(--primary))]" />
+                            {saving.amount.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                          {saving.description && (
+                            <p className="text-sm text-gray-600">
+                              {saving.description}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-500">{format(new Date(saving.createdAt), "MMM dd, yyyy")}</p>
-                          <p className="text-xs text-gray-400">{format(new Date(saving.createdAt), "h:mm a")}</p>
+                          <p className="text-sm text-gray-500">
+                            {format(new Date(saving.createdAt), "MMM dd, yyyy")}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {format(new Date(saving.createdAt), "h:mm a")}
+                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-32 text-gray-500">No savings history yet</div>
+                  <div className="flex items-center justify-center h-32 text-gray-500">
+                    No savings history yet
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -179,7 +252,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Leaderboard</CardTitle>
-                <CardDescription>See how you rank among all savers</CardDescription>
+                <CardDescription>
+                  See how you rank among all savers
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-center h-32 text-gray-500">
@@ -192,5 +267,5 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

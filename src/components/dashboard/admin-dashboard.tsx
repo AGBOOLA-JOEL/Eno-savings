@@ -1,56 +1,80 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { PiggyBank, Users, DollarSign } from "lucide-react"
-import { signOut } from "next-auth/react"
-import { format } from "date-fns"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { PiggyBank, Users, DollarSign } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { format } from "date-fns";
 
 interface AdminDashboardProps {
   users: Array<{
-    id: string
-    name: string | null
-    email: string | null
+    id: string;
+    name: string | null;
+    email: string | null;
     savings: Array<{
-      id: string
-      amount: number
-      createdAt: Date
-      description: string | null
-    }>
-  }>
+      id: string;
+      amount: number;
+      createdAt: Date;
+      description: string | null;
+    }>;
+  }>;
   currentUser: {
-    id: string
-    name: string | null
-  }
+    id: string;
+    name: string | null;
+  };
 }
 
-export default function AdminDashboard({ users, currentUser }: AdminDashboardProps) {
-  const { toast } = useToast()
-  const [selectedUserId, setSelectedUserId] = useState("")
-  const [amount, setAmount] = useState("")
-  const [description, setDescription] = useState("")
-  const [loading, setLoading] = useState(false)
+export default function AdminDashboard({
+  users,
+  currentUser,
+}: AdminDashboardProps) {
+  const { toast } = useToast();
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const totalUsers = users.length
+  const totalUsers = users.length;
   const totalSavings = users.reduce(
-    (sum, user) => sum + user.savings.reduce((userSum, saving) => userSum + saving.amount, 0),
-    0,
-  )
+    (sum, user) =>
+      sum +
+      user.savings.reduce((userSum, saving) => userSum + saving.amount, 0),
+    0
+  );
 
   const handleAddSaving = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedUserId || !amount) return
+    e.preventDefault();
+    if (!selectedUserId || !amount) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch("/api/admin/savings", {
         method: "POST",
@@ -60,31 +84,31 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
           amount: Number.parseFloat(amount),
           description: description.trim() || null,
         }),
-      })
+      });
 
       if (response.ok) {
         toast({
           title: "Success!",
           description: "Savings entry added successfully.",
-        })
-        setAmount("")
-        setDescription("")
-        setSelectedUserId("")
+        });
+        setAmount("");
+        setDescription("");
+        setSelectedUserId("");
         // Refresh the page to show updated data
-        window.location.reload()
+        window.location.reload();
       } else {
-        throw new Error("Failed to add savings")
+        throw new Error("Failed to add savings");
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to add savings entry. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -95,7 +119,9 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
             <div className="flex items-center space-x-3">
               <PiggyBank className="h-8 w-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Admin Dashboard
+                </h1>
                 <p className="text-gray-600">Manage user savings</p>
               </div>
             </div>
@@ -122,23 +148,39 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Savings
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalSavings.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                ₦
+                {totalSavings.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
               <p className="text-xs text-muted-foreground">Across all users</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average per User</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Average per User
+              </CardTitle>
               <PiggyBank className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${totalUsers > 0 ? (totalSavings / totalUsers).toFixed(2) : "0.00"}
+                ₦
+                {totalUsers > 0
+                  ? (totalSavings / totalUsers).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  : "0.00"}
               </div>
               <p className="text-xs text-muted-foreground">Per user</p>
             </CardContent>
@@ -150,13 +192,18 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
           <Card>
             <CardHeader>
               <CardTitle>Add Savings Entry</CardTitle>
-              <CardDescription>Log a new savings entry for a user</CardDescription>
+              <CardDescription>
+                Log a new savings entry for a user
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddSaving} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="user">Select User</Label>
-                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                  <Select
+                    value={selectedUserId}
+                    onValueChange={setSelectedUserId}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a user" />
                     </SelectTrigger>
@@ -205,7 +252,9 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
           <Card>
             <CardHeader>
               <CardTitle>User Summary</CardTitle>
-              <CardDescription>Overview of all users and their savings</CardDescription>
+              <CardDescription>
+                Overview of all users and their savings
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -218,19 +267,32 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => {
-                    const userTotal = user.savings.reduce((sum, saving) => sum + saving.amount, 0)
+                    const userTotal = user.savings.reduce(
+                      (sum, saving) => sum + saving.amount,
+                      0
+                    );
                     return (
                       <TableRow key={user.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{user.name || "No name"}</p>
-                            <p className="text-sm text-gray-500">{user.email}</p>
+                            <p className="font-medium">
+                              {user.name || "No name"}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {user.email}
+                            </p>
                           </div>
                         </TableCell>
-                        <TableCell>${userTotal.toFixed(2)}</TableCell>
+                        <TableCell>
+                          ₦
+                          {userTotal.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </TableCell>
                         <TableCell>{user.savings.length}</TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                 </TableBody>
               </Table>
@@ -242,7 +304,9 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Latest savings entries across all users</CardDescription>
+            <CardDescription>
+              Latest savings entries across all users
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -256,20 +320,41 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
               </TableHeader>
               <TableBody>
                 {users
-                  .flatMap((user) => user.savings.map((saving) => ({ ...saving, user })))
-                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .flatMap((user) =>
+                    user.savings.map((saving) => ({ ...saving, user }))
+                  )
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  )
                   .slice(0, 10)
                   .map((saving) => (
                     <TableRow key={saving.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{saving.user.name || "No name"}</p>
-                          <p className="text-sm text-gray-500">{saving.user.email}</p>
+                          <p className="font-medium">
+                            {saving.user.name || "No name"}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {saving.user.email}
+                          </p>
                         </div>
                       </TableCell>
-                      <TableCell>${saving.amount.toFixed(2)}</TableCell>
+                      <TableCell>
+                        ₦
+                        {saving.amount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
                       <TableCell>{saving.description || "-"}</TableCell>
-                      <TableCell>{format(new Date(saving.createdAt), "MMM dd, yyyy h:mm a")}</TableCell>
+                      <TableCell>
+                        {format(
+                          new Date(saving.createdAt),
+                          "MMM dd, yyyy h:mm a"
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
               </TableBody>
@@ -278,5 +363,5 @@ export default function AdminDashboard({ users, currentUser }: AdminDashboardPro
         </Card>
       </div>
     </div>
-  )
+  );
 }
