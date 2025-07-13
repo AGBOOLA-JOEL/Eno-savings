@@ -135,7 +135,7 @@ export default function Home() {
       </nav>
 
       {/* Top Section */}
-      <div className="flex flex-1 flex-col-reverse lg:flex-row items-center justify-between px-8 lg:px-16 py-8 gap-8 lg:gap-0">
+      <div className="flex flex-1 flex-col-reverse lg:flex-row items-center justify-between px-4 lg:px-16 py-8 gap-8 lg:gap-0">
         {/* Info Section */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center gap-6">
           {/* Reward Banner */}
@@ -208,7 +208,7 @@ export default function Home() {
       </div>
 
       {/* Bottom Perks Section */}
-      <div className="w-full bg-[hsl(var(--card))]/70 py-8 flex flex-col items-center">
+      <div className="w-full bg-[hsl(var(--card))]/70 py-8 flex flex-col items-center justify-between ">
         <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-0 w-full max-w-5xl">
           {/* Perk 1 */}
           <div className="flex items-center gap-4 px-6 py-4">
