@@ -179,12 +179,18 @@ export default function Home() {
           </div>
           {/* CTA Buttons */}
           <div className="flex gap-4 mt-4">
-            <button className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold text-lg px-8 py-3 rounded-md shadow hover:bg-[hsl(var(--primary-foreground))] hover:text-[hsl(var(--primary))] transition">
+            <Link
+              href="/login"
+              className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold text-lg px-8 py-3 rounded-md shadow hover:bg-[hsl(var(--primary-foreground))] hover:text-[hsl(var(--primary))] transition inline-block"
+            >
               Get started
-            </button>
-            <button className="bg-[hsl(var(--card))] text-[hsl(var(--primary))] border border-[hsl(var(--primary))] font-semibold text-lg px-8 py-3 rounded-md shadow hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition">
+            </Link>
+            <Link
+              href="/savings-plan"
+              className="bg-[hsl(var(--card))] text-[hsl(var(--primary))] border border-[hsl(var(--primary))] font-semibold text-lg px-8 py-3 rounded-md shadow hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition inline-block"
+            >
               Learn More
-            </button>
+            </Link>
           </div>
         </div>
         {/* Carousel/Illustration */}
