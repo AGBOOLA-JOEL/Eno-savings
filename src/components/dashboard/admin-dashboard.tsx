@@ -123,6 +123,13 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState("overview");
   const [analytics, setAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [editingSaving, setEditingSaving] = useState<null | {
+    id: string;
+    userId: string;
+    amount: number | string;
+    description: string | null;
+  }>(null);
+  const [showEditSavingDialog, setShowEditSavingDialog] = useState(false);
 
   // New user form state
   const [newUser, setNewUser] = useState({
@@ -205,6 +212,64 @@ export default function AdminDashboard({
         (saving.user.email && saving.user.email.toLowerCase().includes(q))
     );
   }, [allSavings, savingsSearch]);
+
+  const handleUpdateSaving = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSaving) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/admin/savings/${editingSaving.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Number.parseFloat(String(editingSaving.amount)),
+          description: editingSaving.description ?? null,
+        }),
+      });
+
+      if (response.ok) {
+        toast({ title: "Success!", description: "Savings entry updated." });
+        setEditingSaving(null);
+        setShowEditSavingDialog(false);
+        window.location.reload();
+      } else {
+        throw new Error("Failed to update savings entry");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update savings entry. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSaving = async (savingId: string) => {
+    if (!confirm("Delete this savings entry? This cannot be undone.")) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/admin/savings/${savingId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        toast({ title: "Deleted", description: "Savings entry removed." });
+        window.location.reload();
+      } else {
+        throw new Error("Failed to delete");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete savings entry.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddSaving = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1297,6 +1362,7 @@ export default function AdminDashboard({
                           <TableHead>Amount</TableHead>
                           <TableHead>Description</TableHead>
                           <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1349,6 +1415,120 @@ export default function AdminDashboard({
                                       "h:mm a"
                                     )}
                                   </p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Dialog
+                                    open={
+                                      showEditSavingDialog &&
+                                      editingSaving?.id === saving.id
+                                    }
+                                    onOpenChange={(open) => {
+                                      setShowEditSavingDialog(open);
+                                      if (!open) setEditingSaving(null);
+                                    }}
+                                  >
+                                    <DialogTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setEditingSaving({
+                                            id: saving.id,
+                                            userId: saving.user.id,
+                                            amount: saving.amount,
+                                            description: saving.description,
+                                          })
+                                        }
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle>
+                                          Edit Savings Entry
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                          Update amount or description
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      {editingSaving && (
+                                        <form
+                                          onSubmit={handleUpdateSaving}
+                                          className="space-y-4"
+                                        >
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-amount">
+                                              Amount (₦)
+                                            </Label>
+                                            <Input
+                                              id="edit-amount"
+                                              type="number"
+                                              step="0.01"
+                                              value={editingSaving.amount}
+                                              onChange={(e) =>
+                                                setEditingSaving({
+                                                  ...editingSaving,
+                                                  amount: e.target.value,
+                                                })
+                                              }
+                                              required
+                                            />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-description">
+                                              Description
+                                            </Label>
+                                            <Textarea
+                                              id="edit-description"
+                                              value={
+                                                editingSaving.description || ""
+                                              }
+                                              onChange={(e) =>
+                                                setEditingSaving({
+                                                  ...editingSaving,
+                                                  description: e.target.value,
+                                                })
+                                              }
+                                              rows={3}
+                                            />
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <Button
+                                              type="submit"
+                                              disabled={loading}
+                                            >
+                                              {loading
+                                                ? "Updating..."
+                                                : "Update"}
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              onClick={() => {
+                                                setShowEditSavingDialog(false);
+                                                setEditingSaving(null);
+                                              }}
+                                            >
+                                              Cancel
+                                            </Button>
+                                          </div>
+                                        </form>
+                                      )}
+                                    </DialogContent>
+                                  </Dialog>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleDeleteSaving(saving.id)
+                                    }
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 </div>
                               </TableCell>
                             </TableRow>
