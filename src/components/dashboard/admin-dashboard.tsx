@@ -1,15 +1,34 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useMemo, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import type React from "react";
+import { useState, useMemo, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import {
   Users,
   DollarSign,
@@ -23,8 +42,8 @@ import {
   Wallet,
   Activity,
   Target,
-} from "lucide-react"
-import { format } from "date-fns"
+} from "lucide-react";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -32,15 +51,32 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts"
-import { Progress } from "@/components/ui/progress"
-import { AppSidebar } from "@/components/admin/app-sidebar"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
+import { Progress } from "@/components/ui/progress";
+import { AppSidebar } from "@/components/admin/app-sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -48,42 +84,45 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/ui/breadcrumb";
 
 interface AdminDashboardProps {
   users: Array<{
-    id: string
-    name: string | null
-    email: string | null
-    phone: string | null
-    goal: number | null
-    frequency: string | null
+    id: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    goal: number | null;
+    frequency: string | null;
     savings: Array<{
-      id: string
-      amount: number
-      createdAt: Date
-      description: string | null
-    }>
-  }>
+      id: string;
+      amount: number;
+      createdAt: Date;
+      description: string | null;
+    }>;
+  }>;
   currentUser: {
-    id: string
-    name: string | null
-    email: string | null
-  }
+    id: string;
+    name: string | null;
+    email: string | null;
+  };
 }
 
-export default function AdminDashboard({ users: initialUsers, currentUser }: AdminDashboardProps) {
-  const { toast } = useToast()
-  const [users, setUsers] = useState(initialUsers)
-  const [selectedUserId, setSelectedUserId] = useState("")
-  const [amount, setAmount] = useState("")
-  const [description, setDescription] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [userSearch, setUserSearch] = useState("")
-  const [savingsSearch, setSavingsSearch] = useState("")
-  const [activeTab, setActiveTab] = useState("overview")
-  const [analytics, setAnalytics] = useState<any>(null)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
+export default function AdminDashboard({
+  users: initialUsers,
+  currentUser,
+}: AdminDashboardProps) {
+  const { toast } = useToast();
+  const [users, setUsers] = useState(initialUsers);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [savingsSearch, setSavingsSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   // New user form state
   const [newUser, setNewUser] = useState({
@@ -92,81 +131,86 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
     phone: "",
     goal: "",
     frequency: "",
-  })
-  const [editingUser, setEditingUser] = useState<any>(null)
-  const [showNewUserDialog, setShowNewUserDialog] = useState(false)
-  const [showEditUserDialog, setShowEditUserDialog] = useState(false)
+  });
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [showNewUserDialog, setShowNewUserDialog] = useState(false);
+  const [showEditUserDialog, setShowEditUserDialog] = useState(false);
 
   // Get active tab from URL params
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const tab = urlParams.get("tab")
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get("tab");
     if (tab) {
-      setActiveTab(tab)
+      setActiveTab(tab);
     }
-  }, [])
+  }, []);
 
   // Fetch analytics data
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await fetch("/api/admin/analytics")
+        const response = await fetch("/api/admin/analytics");
         if (response.ok) {
-          const data = await response.json()
-          setAnalytics(data)
+          const data = await response.json();
+          setAnalytics(data);
         }
       } catch (error) {
-        console.error("Error fetching analytics:", error)
+        console.error("Error fetching analytics:", error);
       } finally {
-        setAnalyticsLoading(false)
+        setAnalyticsLoading(false);
       }
-    }
+    };
 
-    fetchAnalytics()
-  }, [])
+    fetchAnalytics();
+  }, []);
 
-  const totalUsers = users.length
+  const totalUsers = users.length;
   const totalSavings = users.reduce(
-    (sum, user) => sum + user.savings.reduce((userSum, saving) => userSum + saving.amount, 0),
-    0,
-  )
+    (sum, user) =>
+      sum +
+      user.savings.reduce((userSum, saving) => userSum + saving.amount, 0),
+    0
+  );
 
   // Filtered users for summary table
   const filteredUsers = useMemo(() => {
-    if (!userSearch.trim()) return users
-    const q = userSearch.trim().toLowerCase()
+    if (!userSearch.trim()) return users;
+    const q = userSearch.trim().toLowerCase();
     return users.filter(
       (user) =>
         (user.name && user.name.toLowerCase().includes(q)) ||
         (user.email && user.email.toLowerCase().includes(q)) ||
-        (user.phone && user.phone.toLowerCase().includes(q)),
-    )
-  }, [users, userSearch])
+        (user.phone && user.phone.toLowerCase().includes(q))
+    );
+  }, [users, userSearch]);
 
   // All savings for recent transactions, with user info
   const allSavings = useMemo(
-    () => users.flatMap((user) => user.savings.map((saving) => ({ ...saving, user }))),
-    [users],
-  )
+    () =>
+      users.flatMap((user) =>
+        user.savings.map((saving) => ({ ...saving, user }))
+      ),
+    [users]
+  );
 
   // Filtered savings for recent transactions
   const filteredSavings = useMemo(() => {
-    if (!savingsSearch.trim()) return allSavings
-    const q = savingsSearch.trim().toLowerCase()
+    if (!savingsSearch.trim()) return allSavings;
+    const q = savingsSearch.trim().toLowerCase();
     return allSavings.filter(
       (saving) =>
         (saving.description && saving.description.toLowerCase().includes(q)) ||
         saving.amount.toString().includes(q) ||
         (saving.user.name && saving.user.name.toLowerCase().includes(q)) ||
-        (saving.user.email && saving.user.email.toLowerCase().includes(q)),
-    )
-  }, [allSavings, savingsSearch])
+        (saving.user.email && saving.user.email.toLowerCase().includes(q))
+    );
+  }, [allSavings, savingsSearch]);
 
   const handleAddSaving = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedUserId || !amount) return
+    e.preventDefault();
+    if (!selectedUserId || !amount) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch("/api/admin/savings", {
         method: "POST",
@@ -176,79 +220,80 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
           amount: Number.parseFloat(amount),
           description: description.trim() || null,
         }),
-      })
+      });
 
       if (response.ok) {
         toast({
           title: "Success!",
           description: "Savings entry added successfully.",
-        })
-        setAmount("")
-        setDescription("")
-        setSelectedUserId("")
+        });
+        setAmount("");
+        setDescription("");
+        setSelectedUserId("");
         // Refresh the page to show updated data
-        window.location.reload()
+        window.location.reload();
       } else {
-        throw new Error("Failed to add savings")
+        throw new Error("Failed to add savings");
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to add savings entry. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newUser.name || !newUser.email) return
+    e.preventDefault();
+    if (!newUser.name || !newUser.email) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newUser),
-      })
+      });
 
       if (response.ok) {
         toast({
           title: "Success!",
           description: "User created successfully.",
-        })
+        });
         setNewUser({
           name: "",
           email: "",
           phone: "",
           goal: "",
           frequency: "",
-        })
-        setShowNewUserDialog(false)
+        });
+        setShowNewUserDialog(false);
         // Refresh the page to show updated data
-        window.location.reload()
+        window.location.reload();
       } else {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create user")
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create user");
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create user. Please try again.",
+        description:
+          error.message || "Failed to create user. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEditUser = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!editingUser) return
+    e.preventDefault();
+    if (!editingUser) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch("/api/admin/users", {
         method: "PUT",
@@ -257,62 +302,66 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
           userId: editingUser.id,
           ...editingUser,
         }),
-      })
+      });
 
       if (response.ok) {
         toast({
           title: "Success!",
           description: "User updated successfully.",
-        })
-        setEditingUser(null)
-        setShowEditUserDialog(false)
+        });
+        setEditingUser(null);
+        setShowEditUserDialog(false);
         // Refresh the page to show updated data
-        window.location.reload()
+        window.location.reload();
       } else {
-        throw new Error("Failed to update user")
+        throw new Error("Failed to update user");
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update user. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-      return
+    if (
+      !confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch(`/api/admin/users?userId=${userId}`, {
         method: "DELETE",
-      })
+      });
 
       if (response.ok) {
         toast({
           title: "Success!",
           description: "User deleted successfully.",
-        })
+        });
         // Refresh the page to show updated data
-        window.location.reload()
+        window.location.reload();
       } else {
-        throw new Error("Failed to delete user")
+        throw new Error("Failed to delete user");
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete user. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Chart data for analytics
   const chartData =
@@ -320,7 +369,7 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
       month: format(new Date(item.month), "MMM yyyy"),
       amount: Number(item.total) || 0,
       count: Number(item.count) || 0,
-    })) || []
+    })) || [];
 
   return (
     <SidebarProvider>
@@ -333,7 +382,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Admin Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard">
+                    Admin Dashboard
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -349,8 +400,12 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6"
+          >
+            {/* <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -363,11 +418,14 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                 <Wallet className="h-4 w-4" />
                 <span className="hidden sm:inline">Savings</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TabsTrigger
+                value="analytics"
+                className="flex items-center gap-2"
+              >
                 <Activity className="h-4 w-4" />
                 <span className="hidden sm:inline">Analytics</span>
               </TabsTrigger>
-            </TabsList>
+            </TabsList> */}
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
@@ -375,18 +433,24 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Total Users
+                    </CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{totalUsers}</div>
-                    <p className="text-xs text-muted-foreground">Active savers</p>
+                    <p className="text-xs text-muted-foreground">
+                      Active savers
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Total Savings
+                    </CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -397,42 +461,58 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                         maximumFractionDigits: 2,
                       })}
                     </div>
-                    <p className="text-xs text-muted-foreground">Platform total</p>
+                    <p className="text-xs text-muted-foreground">
+                      Platform total
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Average per User</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Average per User
+                    </CardTitle>
                     <Target className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       ₦
                       {totalUsers > 0
-                        ? (totalSavings / totalUsers).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })
+                        ? (totalSavings / totalUsers).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )
                         : "0.00"}
                     </div>
-                    <p className="text-xs text-muted-foreground">Per user average</p>
+                    <p className="text-xs text-muted-foreground">
+                      Per user average
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Recent Activity
+                    </CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {
-                        allSavings.filter((s) => new Date(s.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000)
-                          .length
+                        allSavings.filter(
+                          (s) =>
+                            new Date(s.createdAt).getTime() >
+                            Date.now() - 7 * 24 * 60 * 60 * 1000
+                        ).length
                       }
                     </div>
-                    <p className="text-xs text-muted-foreground">Entries this week</p>
+                    <p className="text-xs text-muted-foreground">
+                      Entries this week
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -445,12 +525,20 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       <UserPlus className="h-5 w-5" />
                       Quick Actions
                     </CardTitle>
-                    <CardDescription>Common administrative tasks</CardDescription>
+                    <CardDescription>
+                      Common administrative tasks
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Dialog open={showNewUserDialog} onOpenChange={setShowNewUserDialog}>
+                    <Dialog
+                      open={showNewUserDialog}
+                      onOpenChange={setShowNewUserDialog}
+                    >
                       <DialogTrigger asChild>
-                        <Button className="w-full justify-start bg-transparent" variant="outline">
+                        <Button
+                          className="w-full justify-start bg-transparent"
+                          variant="outline"
+                        >
                           <Plus className="h-4 w-4 mr-2" />
                           Create New User
                         </Button>
@@ -458,7 +546,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       <DialogContent className="sm:max-w-md">
                         <DialogHeader>
                           <DialogTitle>Create New User</DialogTitle>
-                          <DialogDescription>Add a new user to the savings platform</DialogDescription>
+                          <DialogDescription>
+                            Add a new user to the savings platform
+                          </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleCreateUser} className="space-y-4">
                           <div className="space-y-2">
@@ -466,7 +556,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                             <Input
                               id="name"
                               value={newUser.name}
-                              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                              onChange={(e) =>
+                                setNewUser({ ...newUser, name: e.target.value })
+                              }
                               placeholder="Enter full name"
                               required
                             />
@@ -477,7 +569,12 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                               id="email"
                               type="email"
                               value={newUser.email}
-                              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                              onChange={(e) =>
+                                setNewUser({
+                                  ...newUser,
+                                  email: e.target.value,
+                                })
+                              }
                               placeholder="Enter email address"
                               required
                             />
@@ -487,26 +584,39 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                             <Input
                               id="phone"
                               value={newUser.phone}
-                              onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                              onChange={(e) =>
+                                setNewUser({
+                                  ...newUser,
+                                  phone: e.target.value,
+                                })
+                              }
                               placeholder="Enter phone number"
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="goal">Savings Goal (Optional)</Label>
+                            <Label htmlFor="goal">
+                              Savings Goal (Optional)
+                            </Label>
                             <Input
                               id="goal"
                               type="number"
                               step="0.01"
                               value={newUser.goal}
-                              onChange={(e) => setNewUser({ ...newUser, goal: e.target.value })}
+                              onChange={(e) =>
+                                setNewUser({ ...newUser, goal: e.target.value })
+                              }
                               placeholder="Enter savings goal"
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="frequency">Frequency (Optional)</Label>
+                            <Label htmlFor="frequency">
+                              Frequency (Optional)
+                            </Label>
                             <Select
                               value={newUser.frequency}
-                              onValueChange={(value) => setNewUser({ ...newUser, frequency: value })}
+                              onValueChange={(value) =>
+                                setNewUser({ ...newUser, frequency: value })
+                              }
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select frequency" />
@@ -515,15 +625,25 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                                 <SelectItem value="daily">Daily</SelectItem>
                                 <SelectItem value="weekly">Weekly</SelectItem>
                                 <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                <SelectItem value="quarterly">
+                                  Quarterly
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="flex gap-2">
-                            <Button type="submit" disabled={loading} className="flex-1">
+                            <Button
+                              type="submit"
+                              disabled={loading}
+                              className="flex-1"
+                            >
                               {loading ? "Creating..." : "Create User"}
                             </Button>
-                            <Button type="button" variant="outline" onClick={() => setShowNewUserDialog(false)}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowNewUserDialog(false)}
+                            >
                               Cancel
                             </Button>
                           </div>
@@ -558,26 +678,38 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       <TrendingUp className="h-5 w-5" />
                       Top Savers
                     </CardTitle>
-                    <CardDescription>Users with highest savings</CardDescription>
+                    <CardDescription>
+                      Users with highest savings
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {users
                         .map((user) => ({
                           ...user,
-                          totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
+                          totalSavings: user.savings.reduce(
+                            (sum, saving) => sum + saving.amount,
+                            0
+                          ),
                         }))
                         .sort((a, b) => b.totalSavings - a.totalSavings)
                         .slice(0, 5)
                         .map((user, index) => (
-                          <div key={user.id} className="flex items-center justify-between">
+                          <div
+                            key={user.id}
+                            className="flex items-center justify-between"
+                          >
                             <div className="flex items-center gap-3">
                               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                                 {index + 1}
                               </div>
                               <div>
-                                <p className="font-medium text-sm">{user.name || "No name"}</p>
-                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                                <p className="font-medium text-sm">
+                                  {user.name || "No name"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {user.email}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right">
@@ -588,7 +720,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                                   maximumFractionDigits: 2,
                                 })}
                               </p>
-                              <p className="text-xs text-muted-foreground">{user.savings.length} entries</p>
+                              <p className="text-xs text-muted-foreground">
+                                {user.savings.length} entries
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -603,9 +737,14 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">User Management</h2>
-                  <p className="text-muted-foreground">Manage all users and their profiles</p>
+                  <p className="text-muted-foreground">
+                    Manage all users and their profiles
+                  </p>
                 </div>
-                <Dialog open={showNewUserDialog} onOpenChange={setShowNewUserDialog}>
+                <Dialog
+                  open={showNewUserDialog}
+                  onOpenChange={setShowNewUserDialog}
+                >
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="h-4 w-4 mr-2" />
@@ -615,7 +754,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Create New User</DialogTitle>
-                      <DialogDescription>Add a new user to the savings platform</DialogDescription>
+                      <DialogDescription>
+                        Add a new user to the savings platform
+                      </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreateUser} className="space-y-4">
                       <div className="space-y-2">
@@ -623,7 +764,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                         <Input
                           id="name"
                           value={newUser.name}
-                          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, name: e.target.value })
+                          }
                           placeholder="Enter full name"
                           required
                         />
@@ -634,7 +777,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                           id="email"
                           type="email"
                           value={newUser.email}
-                          onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, email: e.target.value })
+                          }
                           placeholder="Enter email address"
                           required
                         />
@@ -644,7 +789,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                         <Input
                           id="phone"
                           value={newUser.phone}
-                          onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, phone: e.target.value })
+                          }
                           placeholder="Enter phone number"
                         />
                       </div>
@@ -655,7 +802,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                           type="number"
                           step="0.01"
                           value={newUser.goal}
-                          onChange={(e) => setNewUser({ ...newUser, goal: e.target.value })}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, goal: e.target.value })
+                          }
                           placeholder="Enter savings goal"
                         />
                       </div>
@@ -663,7 +812,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                         <Label htmlFor="frequency">Frequency (Optional)</Label>
                         <Select
                           value={newUser.frequency}
-                          onValueChange={(value) => setNewUser({ ...newUser, frequency: value })}
+                          onValueChange={(value) =>
+                            setNewUser({ ...newUser, frequency: value })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select frequency" />
@@ -677,10 +828,18 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                         </Select>
                       </div>
                       <div className="flex gap-2">
-                        <Button type="submit" disabled={loading} className="flex-1">
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1"
+                        >
                           {loading ? "Creating..." : "Create User"}
                         </Button>
-                        <Button type="button" variant="outline" onClick={() => setShowNewUserDialog(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowNewUserDialog(false)}
+                        >
                           Cancel
                         </Button>
                       </div>
@@ -692,7 +851,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
               <Card>
                 <CardHeader>
                   <CardTitle>All Users</CardTitle>
-                  <CardDescription>Complete list of users and their savings information</CardDescription>
+                  <CardDescription>
+                    Complete list of users and their savings information
+                  </CardDescription>
                   <div className="flex items-center space-x-2">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
@@ -719,21 +880,32 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       </TableHeader>
                       <TableBody>
                         {filteredUsers.map((user) => {
-                          const userTotal = user.savings.reduce((sum, saving) => sum + saving.amount, 0)
-                          const progressPercentage = user.goal ? Math.min((userTotal / user.goal) * 100, 100) : 0
+                          const userTotal = user.savings.reduce(
+                            (sum, saving) => sum + saving.amount,
+                            0
+                          );
+                          const progressPercentage = user.goal
+                            ? Math.min((userTotal / user.goal) * 100, 100)
+                            : 0;
 
                           return (
                             <TableRow key={user.id}>
                               <TableCell>
                                 <div>
-                                  <div className="font-medium">{user.name || "No name"}</div>
-                                  <div className="text-sm text-muted-foreground">{user.savings.length} entries</div>
+                                  <div className="font-medium">
+                                    {user.name || "No name"}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {user.savings.length} entries
+                                  </div>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div>
                                   <div className="text-sm">{user.email}</div>
-                                  <div className="text-sm text-muted-foreground">{user.phone || "No phone"}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {user.phone || "No phone"}
+                                  </div>
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -745,7 +917,13 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                                   : "-"}
                               </TableCell>
                               <TableCell>
-                                {user.frequency ? <Badge variant="secondary">{user.frequency}</Badge> : "-"}
+                                {user.frequency ? (
+                                  <Badge variant="secondary">
+                                    {user.frequency}
+                                  </Badge>
+                                ) : (
+                                  "-"
+                                )}
                               </TableCell>
                               <TableCell>
                                 <div className="font-semibold">
@@ -759,7 +937,10 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                               <TableCell>
                                 {user.goal ? (
                                   <div className="space-y-1">
-                                    <Progress value={progressPercentage} className="w-20" />
+                                    <Progress
+                                      value={progressPercentage}
+                                      className="w-20"
+                                    />
                                     <div className="text-xs text-muted-foreground">
                                       {progressPercentage.toFixed(0)}%
                                     </div>
@@ -771,98 +952,155 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Dialog
-                                    open={showEditUserDialog && editingUser?.id === user.id}
+                                    open={
+                                      showEditUserDialog &&
+                                      editingUser?.id === user.id
+                                    }
                                     onOpenChange={(open) => {
-                                      setShowEditUserDialog(open)
-                                      if (!open) setEditingUser(null)
+                                      setShowEditUserDialog(open);
+                                      if (!open) setEditingUser(null);
                                     }}
                                   >
                                     <DialogTrigger asChild>
-                                      <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setEditingUser(user)}
+                                      >
                                         <Edit className="h-4 w-4" />
                                       </Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-md">
                                       <DialogHeader>
                                         <DialogTitle>Edit User</DialogTitle>
-                                        <DialogDescription>Update user information</DialogDescription>
+                                        <DialogDescription>
+                                          Update user information
+                                        </DialogDescription>
                                       </DialogHeader>
                                       {editingUser && (
-                                        <form onSubmit={handleEditUser} className="space-y-4">
+                                        <form
+                                          onSubmit={handleEditUser}
+                                          className="space-y-4"
+                                        >
                                           <div className="space-y-2">
-                                            <Label htmlFor="edit-name">Full Name</Label>
+                                            <Label htmlFor="edit-name">
+                                              Full Name
+                                            </Label>
                                             <Input
                                               id="edit-name"
                                               value={editingUser.name || ""}
-                                              onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                                              onChange={(e) =>
+                                                setEditingUser({
+                                                  ...editingUser,
+                                                  name: e.target.value,
+                                                })
+                                              }
                                               placeholder="Enter full name"
                                               required
                                             />
                                           </div>
                                           <div className="space-y-2">
-                                            <Label htmlFor="edit-email">Email</Label>
+                                            <Label htmlFor="edit-email">
+                                              Email
+                                            </Label>
                                             <Input
                                               id="edit-email"
                                               type="email"
                                               value={editingUser.email || ""}
                                               onChange={(e) =>
-                                                setEditingUser({ ...editingUser, email: e.target.value })
+                                                setEditingUser({
+                                                  ...editingUser,
+                                                  email: e.target.value,
+                                                })
                                               }
                                               placeholder="Enter email address"
                                               required
                                             />
                                           </div>
                                           <div className="space-y-2">
-                                            <Label htmlFor="edit-phone">Phone</Label>
+                                            <Label htmlFor="edit-phone">
+                                              Phone
+                                            </Label>
                                             <Input
                                               id="edit-phone"
                                               value={editingUser.phone || ""}
                                               onChange={(e) =>
-                                                setEditingUser({ ...editingUser, phone: e.target.value })
+                                                setEditingUser({
+                                                  ...editingUser,
+                                                  phone: e.target.value,
+                                                })
                                               }
                                               placeholder="Enter phone number"
                                             />
                                           </div>
                                           <div className="space-y-2">
-                                            <Label htmlFor="edit-goal">Savings Goal</Label>
+                                            <Label htmlFor="edit-goal">
+                                              Savings Goal
+                                            </Label>
                                             <Input
                                               id="edit-goal"
                                               type="number"
                                               step="0.01"
                                               value={editingUser.goal || ""}
-                                              onChange={(e) => setEditingUser({ ...editingUser, goal: e.target.value })}
+                                              onChange={(e) =>
+                                                setEditingUser({
+                                                  ...editingUser,
+                                                  goal: e.target.value,
+                                                })
+                                              }
                                               placeholder="Enter savings goal"
                                             />
                                           </div>
                                           <div className="space-y-2">
-                                            <Label htmlFor="edit-frequency">Frequency</Label>
+                                            <Label htmlFor="edit-frequency">
+                                              Frequency
+                                            </Label>
                                             <Select
-                                              value={editingUser.frequency || ""}
+                                              value={
+                                                editingUser.frequency || ""
+                                              }
                                               onValueChange={(value) =>
-                                                setEditingUser({ ...editingUser, frequency: value })
+                                                setEditingUser({
+                                                  ...editingUser,
+                                                  frequency: value,
+                                                })
                                               }
                                             >
                                               <SelectTrigger>
                                                 <SelectValue placeholder="Select frequency" />
                                               </SelectTrigger>
                                               <SelectContent>
-                                                <SelectItem value="daily">Daily</SelectItem>
-                                                <SelectItem value="weekly">Weekly</SelectItem>
-                                                <SelectItem value="monthly">Monthly</SelectItem>
-                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                <SelectItem value="daily">
+                                                  Daily
+                                                </SelectItem>
+                                                <SelectItem value="weekly">
+                                                  Weekly
+                                                </SelectItem>
+                                                <SelectItem value="monthly">
+                                                  Monthly
+                                                </SelectItem>
+                                                <SelectItem value="quarterly">
+                                                  Quarterly
+                                                </SelectItem>
                                               </SelectContent>
                                             </Select>
                                           </div>
                                           <div className="flex gap-2">
-                                            <Button type="submit" disabled={loading} className="flex-1">
-                                              {loading ? "Updating..." : "Update User"}
+                                            <Button
+                                              type="submit"
+                                              disabled={loading}
+                                              className="flex-1"
+                                            >
+                                              {loading
+                                                ? "Updating..."
+                                                : "Update User"}
                                             </Button>
                                             <Button
                                               type="button"
                                               variant="outline"
                                               onClick={() => {
-                                                setShowEditUserDialog(false)
-                                                setEditingUser(null)
+                                                setShowEditUserDialog(false);
+                                                setEditingUser(null);
                                               }}
                                             >
                                               Cancel
@@ -883,7 +1121,7 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                                 </div>
                               </TableCell>
                             </TableRow>
-                          )
+                          );
                         })}
                       </TableBody>
                     </Table>
@@ -896,7 +1134,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
             <TabsContent value="savings" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold">Savings Management</h2>
-                <p className="text-muted-foreground">Add and manage savings entries for users</p>
+                <p className="text-muted-foreground">
+                  Add and manage savings entries for users
+                </p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -907,13 +1147,18 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       <Plus className="h-5 w-5" />
                       Add Savings Entry
                     </CardTitle>
-                    <CardDescription>Log a new savings entry for any user</CardDescription>
+                    <CardDescription>
+                      Log a new savings entry for any user
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleAddSaving} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="user">Select User</Label>
-                        <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                        <Select
+                          value={selectedUserId}
+                          onValueChange={setSelectedUserId}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Choose a user" />
                           </SelectTrigger>
@@ -922,7 +1167,11 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                               <SelectItem key={user.id} value={user.id}>
                                 <div className="flex flex-col">
                                   <span>{user.name || user.email}</span>
-                                  {user.name && <span className="text-xs text-muted-foreground">{user.email}</span>}
+                                  {user.name && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {user.email}
+                                    </span>
+                                  )}
                                 </div>
                               </SelectItem>
                             ))}
@@ -944,7 +1193,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Label htmlFor="description">
+                          Description (Optional)
+                        </Label>
                         <Textarea
                           id="description"
                           value={description}
@@ -954,7 +1205,11 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                         />
                       </div>
 
-                      <Button type="submit" className="w-full" disabled={loading}>
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={loading}
+                      >
                         {loading ? "Adding..." : "Add Savings Entry"}
                       </Button>
                     </form>
@@ -968,20 +1223,36 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       <Activity className="h-5 w-5" />
                       Recent Activity
                     </CardTitle>
-                    <CardDescription>Latest savings entries across all users</CardDescription>
+                    <CardDescription>
+                      Latest savings entries across all users
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {allSavings
-                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .sort(
+                          (a, b) =>
+                            new Date(b.createdAt).getTime() -
+                            new Date(a.createdAt).getTime()
+                        )
                         .slice(0, 5)
                         .map((saving) => (
-                          <div key={saving.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div
+                            key={saving.id}
+                            className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                          >
                             <div>
-                              <p className="font-medium text-sm">{saving.user.name || "No name"}</p>
-                              <p className="text-xs text-muted-foreground">{saving.description || "No description"}</p>
+                              <p className="font-medium text-sm">
+                                {saving.user.name || "No name"}
+                              </p>
                               <p className="text-xs text-muted-foreground">
-                                {format(new Date(saving.createdAt), "MMM dd, yyyy")}
+                                {saving.description || "No description"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(
+                                  new Date(saving.createdAt),
+                                  "MMM dd, yyyy"
+                                )}
                               </p>
                             </div>
                             <div className="text-right">
@@ -1004,7 +1275,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
               <Card>
                 <CardHeader>
                   <CardTitle>All Savings Entries</CardTitle>
-                  <CardDescription>Complete history of all savings entries</CardDescription>
+                  <CardDescription>
+                    Complete history of all savings entries
+                  </CardDescription>
                   <div className="flex items-center space-x-2">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
@@ -1028,14 +1301,22 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                       </TableHeader>
                       <TableBody>
                         {filteredSavings
-                          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                          .sort(
+                            (a, b) =>
+                              new Date(b.createdAt).getTime() -
+                              new Date(a.createdAt).getTime()
+                          )
                           .slice(0, 50)
                           .map((saving) => (
                             <TableRow key={saving.id}>
                               <TableCell>
                                 <div>
-                                  <p className="font-medium text-sm">{saving.user.name || "No name"}</p>
-                                  <p className="text-xs text-muted-foreground">{saving.user.email}</p>
+                                  <p className="font-medium text-sm">
+                                    {saving.user.name || "No name"}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {saving.user.email}
+                                  </p>
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -1048,13 +1329,25 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                                 </span>
                               </TableCell>
                               <TableCell>
-                                {saving.description || <span className="text-muted-foreground">No description</span>}
+                                {saving.description || (
+                                  <span className="text-muted-foreground">
+                                    No description
+                                  </span>
+                                )}
                               </TableCell>
                               <TableCell>
                                 <div>
-                                  <p className="text-sm">{format(new Date(saving.createdAt), "MMM dd, yyyy")}</p>
+                                  <p className="text-sm">
+                                    {format(
+                                      new Date(saving.createdAt),
+                                      "MMM dd, yyyy"
+                                    )}
+                                  </p>
                                   <p className="text-xs text-muted-foreground">
-                                    {format(new Date(saving.createdAt), "h:mm a")}
+                                    {format(
+                                      new Date(saving.createdAt),
+                                      "h:mm a"
+                                    )}
                                   </p>
                                 </div>
                               </TableCell>
@@ -1071,7 +1364,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
             <TabsContent value="analytics" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold">Analytics & Insights</h2>
-                <p className="text-muted-foreground">Detailed analytics and performance metrics</p>
+                <p className="text-muted-foreground">
+                  Detailed analytics and performance metrics
+                </p>
               </div>
 
               {analyticsLoading ? (
@@ -1094,65 +1389,89 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                          Total Users
+                        </CardTitle>
                         <Users className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">{analytics?.totalUsers || totalUsers}</div>
-                        <p className="text-xs text-muted-foreground">Active savers on platform</p>
+                        <div className="text-2xl font-bold">
+                          {analytics?.totalUsers || totalUsers}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Active savers on platform
+                        </p>
                       </CardContent>
                     </Card>
 
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                          Total Savings
+                        </CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
                           ₦
-                          {(analytics?.totalSavings || totalSavings).toLocaleString(undefined, {
+                          {(
+                            analytics?.totalSavings || totalSavings
+                          ).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
                         </div>
-                        <p className="text-xs text-muted-foreground">Total platform savings</p>
+                        <p className="text-xs text-muted-foreground">
+                          Total platform savings
+                        </p>
                       </CardContent>
                     </Card>
 
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Recent Savings</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                          Recent Savings
+                        </CardTitle>
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
                           ₦
-                          {(analytics?.recentSavings || 0).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {(analytics?.recentSavings || 0).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground">Last 30 days</p>
+                        <p className="text-xs text-muted-foreground">
+                          Last 30 days
+                        </p>
                       </CardContent>
                     </Card>
 
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Average per User</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                          Average per User
+                        </CardTitle>
                         <Target className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
                           ₦
                           {(
-                            analytics?.averagePerUser || (totalUsers > 0 ? totalSavings / totalUsers : 0)
+                            analytics?.averagePerUser ||
+                            (totalUsers > 0 ? totalSavings / totalUsers : 0)
                           ).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
                         </div>
-                        <p className="text-xs text-muted-foreground">Per user average</p>
+                        <p className="text-xs text-muted-foreground">
+                          Per user average
+                        </p>
                       </CardContent>
                     </Card>
                   </div>
@@ -1162,7 +1481,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                     <Card>
                       <CardHeader>
                         <CardTitle>Savings Trend</CardTitle>
-                        <CardDescription>Monthly savings growth over time</CardDescription>
+                        <CardDescription>
+                          Monthly savings growth over time
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <ChartContainer
@@ -1180,7 +1501,12 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                               <XAxis dataKey="month" />
                               <YAxis />
                               <ChartTooltip content={<ChartTooltipContent />} />
-                              <Line type="monotone" dataKey="amount" stroke="var(--color-amount)" strokeWidth={2} />
+                              <Line
+                                type="monotone"
+                                dataKey="amount"
+                                stroke="var(--color-amount)"
+                                strokeWidth={2}
+                              />
                             </LineChart>
                           </ResponsiveContainer>
                         </ChartContainer>
@@ -1190,7 +1516,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                     <Card>
                       <CardHeader>
                         <CardTitle>Monthly Entries</CardTitle>
-                        <CardDescription>Number of savings entries per month</CardDescription>
+                        <CardDescription>
+                          Number of savings entries per month
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <ChartContainer
@@ -1220,7 +1548,9 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                   <Card>
                     <CardHeader>
                       <CardTitle>Top Performers</CardTitle>
-                      <CardDescription>Users with highest savings and most consistent activity</CardDescription>
+                      <CardDescription>
+                        Users with highest savings and most consistent activity
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <Table>
@@ -1238,14 +1568,20 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                           {users
                             .map((user) => ({
                               ...user,
-                              totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
+                              totalSavings: user.savings.reduce(
+                                (sum, saving) => sum + saving.amount,
+                                0
+                              ),
                             }))
                             .sort((a, b) => b.totalSavings - a.totalSavings)
                             .slice(0, 10)
                             .map((user, index) => {
                               const progressPercentage = user.goal
-                                ? Math.min((user.totalSavings / user.goal) * 100, 100)
-                                : 0
+                                ? Math.min(
+                                    (user.totalSavings / user.goal) * 100,
+                                    100
+                                  )
+                                : 0;
 
                               return (
                                 <TableRow key={user.id}>
@@ -1256,41 +1592,57 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
                                   </TableCell>
                                   <TableCell>
                                     <div>
-                                      <p className="font-medium">{user.name || "No name"}</p>
-                                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                                      <p className="font-medium">
+                                        {user.name || "No name"}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {user.email}
+                                      </p>
                                     </div>
                                   </TableCell>
                                   <TableCell>
                                     <span className="font-semibold text-green-600">
                                       ₦
-                                      {user.totalSavings.toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                      })}
+                                      {user.totalSavings.toLocaleString(
+                                        undefined,
+                                        {
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        }
+                                      )}
                                     </span>
                                   </TableCell>
                                   <TableCell>{user.savings.length}</TableCell>
                                   <TableCell>
                                     {user.goal ? (
                                       <div className="space-y-1">
-                                        <Progress value={progressPercentage} className="w-20" />
+                                        <Progress
+                                          value={progressPercentage}
+                                          className="w-20"
+                                        />
                                         <div className="text-xs text-muted-foreground">
                                           {progressPercentage.toFixed(0)}%
                                         </div>
                                       </div>
                                     ) : (
-                                      <span className="text-muted-foreground">No goal</span>
+                                      <span className="text-muted-foreground">
+                                        No goal
+                                      </span>
                                     )}
                                   </TableCell>
                                   <TableCell>
                                     {user.frequency ? (
-                                      <Badge variant="secondary">{user.frequency}</Badge>
+                                      <Badge variant="secondary">
+                                        {user.frequency}
+                                      </Badge>
                                     ) : (
-                                      <span className="text-muted-foreground">Not set</span>
+                                      <span className="text-muted-foreground">
+                                        Not set
+                                      </span>
                                     )}
                                   </TableCell>
                                 </TableRow>
-                              )
+                              );
                             })}
                         </TableBody>
                       </Table>
@@ -1303,5 +1655,5 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
