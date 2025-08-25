@@ -7,101 +7,68 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Check if user is admin
-    const currentUser = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     })
 
-    if (currentUser?.role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get("period") || "30"
+    // Get total users
+    const totalUsers = await prisma.user.count()
 
-    const daysAgo = new Date()
-    daysAgo.setDate(daysAgo.getDate() - Number.parseInt(period))
+    // Get total savings
+    const totalSavingsResult = await prisma.saving.aggregate({
+      _sum: {
+        amount: true,
+      },
+    })
+    const totalSavings = totalSavingsResult._sum.amount || 0
 
-    // Get analytics data
-    const [totalUsers, totalSavings, recentSavings, savingsGrowth, topSavers, monthlyData] = await Promise.all([
-      // Total users
-      prisma.user.count({
-        where: { role: "USER" },
-      }),
+    // Get recent savings (last 30 days)
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      // Total savings amount
-      prisma.saving.aggregate({
-        _sum: { amount: true },
-      }),
-
-      // Recent savings (last 30 days)
-      prisma.saving.aggregate({
-        _sum: { amount: true },
-        where: {
-          createdAt: { gte: daysAgo },
+    const recentSavingsResult = await prisma.saving.aggregate({
+      where: {
+        createdAt: {
+          gte: thirtyDaysAgo,
         },
-      }),
+      },
+      _sum: {
+        amount: true,
+      },
+    })
+    const recentSavings = recentSavingsResult._sum.amount || 0
 
-      // Savings growth data
-      prisma.saving.groupBy({
-        by: ["createdAt"],
-        _sum: { amount: true },
-        where: {
-          createdAt: { gte: daysAgo },
-        },
-        orderBy: { createdAt: "asc" },
-      }),
+    // Get monthly data for charts
+    const monthlyData = await prisma.$queryRaw`
+      SELECT 
+        DATE_TRUNC('month', "createdAt") as month,
+        SUM(amount) as total,
+        COUNT(*) as count
+      FROM "Saving"
+      WHERE "createdAt" >= NOW() - INTERVAL '12 months'
+      GROUP BY DATE_TRUNC('month', "createdAt")
+      ORDER BY month ASC
+    `
 
-      // Top savers
-      prisma.user.findMany({
-        where: { role: "USER" },
-        include: {
-          savings: {
-            select: { amount: true },
-          },
-        },
-        take: 5,
-      }),
-
-      // Monthly savings data for chart
-      prisma.$queryRaw`
-        SELECT 
-          DATE_TRUNC('month', "createdAt") as month,
-          SUM(amount) as total,
-          COUNT(*) as count
-        FROM "Saving"
-        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
-        GROUP BY DATE_TRUNC('month', "createdAt")
-        ORDER BY month ASC
-      `,
-    ])
-
-    // Process top savers
-    const processedTopSavers = topSavers
-      .map((user) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
-        savingsCount: user.savings.length,
-      }))
-      .sort((a, b) => b.totalSavings - a.totalSavings)
+    const averagePerUser = totalUsers > 0 ? totalSavings / totalUsers : 0
 
     return NextResponse.json({
       totalUsers,
-      totalSavings: totalSavings._sum.amount || 0,
-      recentSavings: recentSavings._sum.amount || 0,
-      averagePerUser: totalUsers > 0 ? (totalSavings._sum.amount || 0) / totalUsers : 0,
-      topSavers: processedTopSavers,
+      totalSavings,
+      recentSavings,
+      averagePerUser,
       monthlyData,
-      savingsGrowth,
     })
   } catch (error) {
-    console.error("Error fetching analytics:", error)
-    return NextResponse.json({ error: "Failed to fetch analytics" }, { status: 500 })
+    console.error("Analytics API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

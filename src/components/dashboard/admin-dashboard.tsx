@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import {
-  PiggyBank,
   Users,
   DollarSign,
   TrendingUp,
@@ -25,7 +24,6 @@ import {
   Activity,
   Target,
 } from "lucide-react"
-import { signOut } from "next-auth/react"
 import { format } from "date-fns"
 import {
   Dialog,
@@ -40,6 +38,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts"
 import { Progress } from "@/components/ui/progress"
+import { AppSidebar } from "@/components/admin/app-sidebar"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 interface AdminDashboardProps {
   users: Array<{
@@ -59,6 +68,7 @@ interface AdminDashboardProps {
   currentUser: {
     id: string
     name: string | null
+    email: string | null
   }
 }
 
@@ -86,6 +96,15 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
   const [editingUser, setEditingUser] = useState<any>(null)
   const [showNewUserDialog, setShowNewUserDialog] = useState(false)
   const [showEditUserDialog, setShowEditUserDialog] = useState(false)
+
+  // Get active tab from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const tab = urlParams.get("tab")
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [])
 
   // Fetch analytics data
   useEffect(() => {
@@ -304,980 +323,985 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
     })) || []
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
-                <PiggyBank className="h-8 w-8 text-primary" />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Eno Savings Admin</h1>
-                  <p className="text-gray-600">Complete savings management</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="hidden sm:flex">
-                {currentUser.name || "Admin"}
-              </Badge>
-              <Button variant="outline" onClick={() => signOut()}>
-                Sign Out
-              </Button>
-            </div>
+    <SidebarProvider>
+      <AppSidebar currentUser={currentUser} />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/dashboard">Admin Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {activeTab === "overview" && "Overview"}
+                    {activeTab === "users" && "User Management"}
+                    {activeTab === "savings" && "Savings Management"}
+                    {activeTab === "analytics" && "Analytics & Reports"}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
-        </div>
-      </header>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Users</span>
+              </TabsTrigger>
+              <TabsTrigger value="savings" className="flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                <span className="hidden sm:inline">Savings</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+            </TabsList>
 
-      <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Users</span>
-            </TabsTrigger>
-            <TabsTrigger value="savings" className="flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
-              <span className="hidden sm:inline">Savings</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
-            </TabsTrigger>
-          </TabsList>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{totalUsers}</div>
+                    <p className="text-xs text-muted-foreground">Active savers</p>
+                  </CardContent>
+                </Card>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{totalUsers}</div>
-                  <p className="text-xs text-muted-foreground">Active savers</p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      ₦
+                      {totalSavings.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Platform total</p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    ₦
-                    {totalSavings.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Platform total</p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Average per User</CardTitle>
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      ₦
+                      {totalUsers > 0
+                        ? (totalSavings / totalUsers).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        : "0.00"}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Per user average</p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average per User</CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    ₦
-                    {totalUsers > 0
-                      ? (totalSavings / totalUsers).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })
-                      : "0.00"}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Per user average</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {
-                      allSavings.filter((s) => new Date(s.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000)
-                        .length
-                    }
-                  </div>
-                  <p className="text-xs text-muted-foreground">Entries this week</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserPlus className="h-5 w-5" />
-                    Quick Actions
-                  </CardTitle>
-                  <CardDescription>Common administrative tasks</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Dialog open={showNewUserDialog} onOpenChange={setShowNewUserDialog}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full justify-start bg-transparent" variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create New User
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Create New User</DialogTitle>
-                        <DialogDescription>Add a new user to the savings platform</DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleCreateUser} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="name">Full Name</Label>
-                          <Input
-                            id="name"
-                            value={newUser.name}
-                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                            placeholder="Enter full name"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={newUser.email}
-                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                            placeholder="Enter email address"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">Phone (Optional)</Label>
-                          <Input
-                            id="phone"
-                            value={newUser.phone}
-                            onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                            placeholder="Enter phone number"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="goal">Savings Goal (Optional)</Label>
-                          <Input
-                            id="goal"
-                            type="number"
-                            step="0.01"
-                            value={newUser.goal}
-                            onChange={(e) => setNewUser({ ...newUser, goal: e.target.value })}
-                            placeholder="Enter savings goal"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="frequency">Frequency (Optional)</Label>
-                          <Select
-                            value={newUser.frequency}
-                            onValueChange={(value) => setNewUser({ ...newUser, frequency: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select frequency" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="daily">Daily</SelectItem>
-                              <SelectItem value="weekly">Weekly</SelectItem>
-                              <SelectItem value="monthly">Monthly</SelectItem>
-                              <SelectItem value="quarterly">Quarterly</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button type="submit" disabled={loading} className="flex-1">
-                            {loading ? "Creating..." : "Create User"}
-                          </Button>
-                          <Button type="button" variant="outline" onClick={() => setShowNewUserDialog(false)}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-
-                  <Button
-                    className="w-full justify-start bg-transparent"
-                    variant="outline"
-                    onClick={() => setActiveTab("savings")}
-                  >
-                    <Wallet className="h-4 w-4 mr-2" />
-                    Add Savings Entry
-                  </Button>
-
-                  <Button
-                    className="w-full justify-start bg-transparent"
-                    variant="outline"
-                    onClick={() => setActiveTab("analytics")}
-                  >
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Top Savers */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Top Savers
-                  </CardTitle>
-                  <CardDescription>Users with highest savings</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {users
-                      .map((user) => ({
-                        ...user,
-                        totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
-                      }))
-                      .sort((a, b) => b.totalSavings - a.totalSavings)
-                      .slice(0, 5)
-                      .map((user, index) => (
-                        <div key={user.id} className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm">{user.name || "No name"}</p>
-                              <p className="text-xs text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-sm">
-                              ₦
-                              {user.totalSavings.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{user.savings.length} entries</p>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">User Management</h2>
-                <p className="text-muted-foreground">Manage all users and their profiles</p>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {
+                        allSavings.filter((s) => new Date(s.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000)
+                          .length
+                      }
+                    </div>
+                    <p className="text-xs text-muted-foreground">Entries this week</p>
+                  </CardContent>
+                </Card>
               </div>
-              <Dialog open={showNewUserDialog} onOpenChange={setShowNewUserDialog}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add User
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Create New User</DialogTitle>
-                    <DialogDescription>Add a new user to the savings platform</DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleCreateUser} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        value={newUser.name}
-                        onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                        placeholder="Enter full name"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={newUser.email}
-                        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                        placeholder="Enter email address"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone (Optional)</Label>
-                      <Input
-                        id="phone"
-                        value={newUser.phone}
-                        onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                        placeholder="Enter phone number"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="goal">Savings Goal (Optional)</Label>
-                      <Input
-                        id="goal"
-                        type="number"
-                        step="0.01"
-                        value={newUser.goal}
-                        onChange={(e) => setNewUser({ ...newUser, goal: e.target.value })}
-                        placeholder="Enter savings goal"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="frequency">Frequency (Optional)</Label>
-                      <Select
-                        value={newUser.frequency}
-                        onValueChange={(value) => setNewUser({ ...newUser, frequency: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select frequency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="quarterly">Quarterly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" disabled={loading} className="flex-1">
-                        {loading ? "Creating..." : "Create User"}
-                      </Button>
-                      <Button type="button" variant="outline" onClick={() => setShowNewUserDialog(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>All Users</CardTitle>
-                <CardDescription>Complete list of users and their savings information</CardDescription>
-                <div className="flex items-center space-x-2">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search users by name, email, or phone..."
-                    value={userSearch}
-                    onChange={(e) => setUserSearch(e.target.value)}
-                    className="max-w-sm"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Goal</TableHead>
-                        <TableHead>Frequency</TableHead>
-                        <TableHead>Total Savings</TableHead>
-                        <TableHead>Progress</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.map((user) => {
-                        const userTotal = user.savings.reduce((sum, saving) => sum + saving.amount, 0)
-                        const progressPercentage = user.goal ? Math.min((userTotal / user.goal) * 100, 100) : 0
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserPlus className="h-5 w-5" />
+                      Quick Actions
+                    </CardTitle>
+                    <CardDescription>Common administrative tasks</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Dialog open={showNewUserDialog} onOpenChange={setShowNewUserDialog}>
+                      <DialogTrigger asChild>
+                        <Button className="w-full justify-start bg-transparent" variant="outline">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create New User
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Create New User</DialogTitle>
+                          <DialogDescription>Add a new user to the savings platform</DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateUser} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input
+                              id="name"
+                              value={newUser.name}
+                              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                              placeholder="Enter full name"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              value={newUser.email}
+                              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                              placeholder="Enter email address"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Phone (Optional)</Label>
+                            <Input
+                              id="phone"
+                              value={newUser.phone}
+                              onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                              placeholder="Enter phone number"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="goal">Savings Goal (Optional)</Label>
+                            <Input
+                              id="goal"
+                              type="number"
+                              step="0.01"
+                              value={newUser.goal}
+                              onChange={(e) => setNewUser({ ...newUser, goal: e.target.value })}
+                              placeholder="Enter savings goal"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="frequency">Frequency (Optional)</Label>
+                            <Select
+                              value={newUser.frequency}
+                              onValueChange={(value) => setNewUser({ ...newUser, frequency: value })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select frequency" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="daily">Daily</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button type="submit" disabled={loading} className="flex-1">
+                              {loading ? "Creating..." : "Create User"}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => setShowNewUserDialog(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
 
-                        return (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{user.name || "No name"}</div>
-                                <div className="text-sm text-muted-foreground">{user.savings.length} entries</div>
+                    <Button
+                      className="w-full justify-start bg-transparent"
+                      variant="outline"
+                      onClick={() => setActiveTab("savings")}
+                    >
+                      <Wallet className="h-4 w-4 mr-2" />
+                      Add Savings Entry
+                    </Button>
+
+                    <Button
+                      className="w-full justify-start bg-transparent"
+                      variant="outline"
+                      onClick={() => setActiveTab("analytics")}
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      View Analytics
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Top Savers */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Top Savers
+                    </CardTitle>
+                    <CardDescription>Users with highest savings</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {users
+                        .map((user) => ({
+                          ...user,
+                          totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
+                        }))
+                        .sort((a, b) => b.totalSavings - a.totalSavings)
+                        .slice(0, 5)
+                        .map((user, index) => (
+                          <div key={user.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                                {index + 1}
                               </div>
-                            </TableCell>
-                            <TableCell>
                               <div>
-                                <div className="text-sm">{user.email}</div>
-                                <div className="text-sm text-muted-foreground">{user.phone || "No phone"}</div>
+                                <p className="font-medium text-sm">{user.name || "No name"}</p>
+                                <p className="text-xs text-muted-foreground">{user.email}</p>
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              {user.goal != null
-                                ? `₦${user.goal.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}`
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              {user.frequency ? <Badge variant="secondary">{user.frequency}</Badge> : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-semibold">
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-sm">
                                 ₦
-                                {userTotal.toLocaleString(undefined, {
+                                {user.totalSavings.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {user.goal ? (
-                                <div className="space-y-1">
-                                  <Progress value={progressPercentage} className="w-20" />
-                                  <div className="text-xs text-muted-foreground">{progressPercentage.toFixed(0)}%</div>
-                                </div>
-                              ) : (
-                                "-"
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Dialog
-                                  open={showEditUserDialog && editingUser?.id === user.id}
-                                  onOpenChange={(open) => {
-                                    setShowEditUserDialog(open)
-                                    if (!open) setEditingUser(null)
-                                  }}
-                                >
-                                  <DialogTrigger asChild>
-                                    <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="sm:max-w-md">
-                                    <DialogHeader>
-                                      <DialogTitle>Edit User</DialogTitle>
-                                      <DialogDescription>Update user information</DialogDescription>
-                                    </DialogHeader>
-                                    {editingUser && (
-                                      <form onSubmit={handleEditUser} className="space-y-4">
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-name">Full Name</Label>
-                                          <Input
-                                            id="edit-name"
-                                            value={editingUser.name || ""}
-                                            onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
-                                            placeholder="Enter full name"
-                                            required
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-email">Email</Label>
-                                          <Input
-                                            id="edit-email"
-                                            type="email"
-                                            value={editingUser.email || ""}
-                                            onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                                            placeholder="Enter email address"
-                                            required
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-phone">Phone</Label>
-                                          <Input
-                                            id="edit-phone"
-                                            value={editingUser.phone || ""}
-                                            onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
-                                            placeholder="Enter phone number"
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-goal">Savings Goal</Label>
-                                          <Input
-                                            id="edit-goal"
-                                            type="number"
-                                            step="0.01"
-                                            value={editingUser.goal || ""}
-                                            onChange={(e) => setEditingUser({ ...editingUser, goal: e.target.value })}
-                                            placeholder="Enter savings goal"
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor="edit-frequency">Frequency</Label>
-                                          <Select
-                                            value={editingUser.frequency || ""}
-                                            onValueChange={(value) =>
-                                              setEditingUser({ ...editingUser, frequency: value })
-                                            }
-                                          >
-                                            <SelectTrigger>
-                                              <SelectValue placeholder="Select frequency" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="daily">Daily</SelectItem>
-                                              <SelectItem value="weekly">Weekly</SelectItem>
-                                              <SelectItem value="monthly">Monthly</SelectItem>
-                                              <SelectItem value="quarterly">Quarterly</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="flex gap-2">
-                                          <Button type="submit" disabled={loading} className="flex-1">
-                                            {loading ? "Updating..." : "Update User"}
-                                          </Button>
-                                          <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => {
-                                              setShowEditUserDialog(false)
-                                              setEditingUser(null)
-                                            }}
-                                          >
-                                            Cancel
-                                          </Button>
-                                        </div>
-                                      </form>
-                                    )}
-                                  </DialogContent>
-                                </Dialog>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteUser(user.id)}
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
+                              </p>
+                              <p className="text-xs text-muted-foreground">{user.savings.length} entries</p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Users Tab */}
+            <TabsContent value="users" className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">User Management</h2>
+                  <p className="text-muted-foreground">Manage all users and their profiles</p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Savings Tab */}
-          <TabsContent value="savings" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">Savings Management</h2>
-              <p className="text-muted-foreground">Add and manage savings entries for users</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Add Savings Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus className="h-5 w-5" />
-                    Add Savings Entry
-                  </CardTitle>
-                  <CardDescription>Log a new savings entry for any user</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleAddSaving} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="user">Select User</Label>
-                      <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              <div className="flex flex-col">
-                                <span>{user.name || user.email}</span>
-                                {user.name && <span className="text-xs text-muted-foreground">{user.email}</span>}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="amount">Amount (₦)</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        step="0.01"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Enter amount"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description (Optional)</Label>
-                      <Textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Add a note about this savings entry"
-                        rows={3}
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Adding..." : "Add Savings Entry"}
+                <Dialog open={showNewUserDialog} onOpenChange={setShowNewUserDialog}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add User
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Create New User</DialogTitle>
+                      <DialogDescription>Add a new user to the savings platform</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateUser} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          value={newUser.name}
+                          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                          placeholder="Enter full name"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={newUser.email}
+                          onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                          placeholder="Enter email address"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone (Optional)</Label>
+                        <Input
+                          id="phone"
+                          value={newUser.phone}
+                          onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                          placeholder="Enter phone number"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="goal">Savings Goal (Optional)</Label>
+                        <Input
+                          id="goal"
+                          type="number"
+                          step="0.01"
+                          value={newUser.goal}
+                          onChange={(e) => setNewUser({ ...newUser, goal: e.target.value })}
+                          placeholder="Enter savings goal"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="frequency">Frequency (Optional)</Label>
+                        <Select
+                          value={newUser.frequency}
+                          onValueChange={(value) => setNewUser({ ...newUser, frequency: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select frequency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" disabled={loading} className="flex-1">
+                          {loading ? "Creating..." : "Create User"}
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setShowNewUserDialog(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
 
-              {/* Recent Savings Summary */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Recent Activity
-                  </CardTitle>
-                  <CardDescription>Latest savings entries across all users</CardDescription>
+                  <CardTitle>All Users</CardTitle>
+                  <CardDescription>Complete list of users and their savings information</CardDescription>
+                  <div className="flex items-center space-x-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search users by name, email, or phone..."
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="max-w-sm"
+                    />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {allSavings
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                      .slice(0, 5)
-                      .map((saving) => (
-                        <div key={saving.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{saving.user.name || "No name"}</p>
-                            <p className="text-xs text-muted-foreground">{saving.description || "No description"}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(saving.createdAt), "MMM dd, yyyy")}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-green-600">
-                              +₦
-                              {saving.amount.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Goal</TableHead>
+                          <TableHead>Frequency</TableHead>
+                          <TableHead>Total Savings</TableHead>
+                          <TableHead>Progress</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => {
+                          const userTotal = user.savings.reduce((sum, saving) => sum + saving.amount, 0)
+                          const progressPercentage = user.goal ? Math.min((userTotal / user.goal) * 100, 100) : 0
+
+                          return (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{user.name || "No name"}</div>
+                                  <div className="text-sm text-muted-foreground">{user.savings.length} entries</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div className="text-sm">{user.email}</div>
+                                  <div className="text-sm text-muted-foreground">{user.phone || "No phone"}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {user.goal != null
+                                  ? `₦${user.goal.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}`
+                                  : "-"}
+                              </TableCell>
+                              <TableCell>
+                                {user.frequency ? <Badge variant="secondary">{user.frequency}</Badge> : "-"}
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-semibold">
+                                  ₦
+                                  {userTotal.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {user.goal ? (
+                                  <div className="space-y-1">
+                                    <Progress value={progressPercentage} className="w-20" />
+                                    <div className="text-xs text-muted-foreground">
+                                      {progressPercentage.toFixed(0)}%
+                                    </div>
+                                  </div>
+                                ) : (
+                                  "-"
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Dialog
+                                    open={showEditUserDialog && editingUser?.id === user.id}
+                                    onOpenChange={(open) => {
+                                      setShowEditUserDialog(open)
+                                      if (!open) setEditingUser(null)
+                                    }}
+                                  >
+                                    <DialogTrigger asChild>
+                                      <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle>Edit User</DialogTitle>
+                                        <DialogDescription>Update user information</DialogDescription>
+                                      </DialogHeader>
+                                      {editingUser && (
+                                        <form onSubmit={handleEditUser} className="space-y-4">
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-name">Full Name</Label>
+                                            <Input
+                                              id="edit-name"
+                                              value={editingUser.name || ""}
+                                              onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                                              placeholder="Enter full name"
+                                              required
+                                            />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-email">Email</Label>
+                                            <Input
+                                              id="edit-email"
+                                              type="email"
+                                              value={editingUser.email || ""}
+                                              onChange={(e) =>
+                                                setEditingUser({ ...editingUser, email: e.target.value })
+                                              }
+                                              placeholder="Enter email address"
+                                              required
+                                            />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-phone">Phone</Label>
+                                            <Input
+                                              id="edit-phone"
+                                              value={editingUser.phone || ""}
+                                              onChange={(e) =>
+                                                setEditingUser({ ...editingUser, phone: e.target.value })
+                                              }
+                                              placeholder="Enter phone number"
+                                            />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-goal">Savings Goal</Label>
+                                            <Input
+                                              id="edit-goal"
+                                              type="number"
+                                              step="0.01"
+                                              value={editingUser.goal || ""}
+                                              onChange={(e) => setEditingUser({ ...editingUser, goal: e.target.value })}
+                                              placeholder="Enter savings goal"
+                                            />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <Label htmlFor="edit-frequency">Frequency</Label>
+                                            <Select
+                                              value={editingUser.frequency || ""}
+                                              onValueChange={(value) =>
+                                                setEditingUser({ ...editingUser, frequency: value })
+                                              }
+                                            >
+                                              <SelectTrigger>
+                                                <SelectValue placeholder="Select frequency" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="daily">Daily</SelectItem>
+                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <Button type="submit" disabled={loading} className="flex-1">
+                                              {loading ? "Updating..." : "Update User"}
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              onClick={() => {
+                                                setShowEditUserDialog(false)
+                                                setEditingUser(null)
+                                              }}
+                                            >
+                                              Cancel
+                                            </Button>
+                                          </div>
+                                        </form>
+                                      )}
+                                    </DialogContent>
+                                  </Dialog>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user.id)}
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            </TabsContent>
 
-            {/* All Savings Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>All Savings Entries</CardTitle>
-                <CardDescription>Complete history of all savings entries</CardDescription>
-                <div className="flex items-center space-x-2">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search savings by description, amount, or user..."
-                    value={savingsSearch}
-                    onChange={(e) => setSavingsSearch(e.target.value)}
-                    className="max-w-sm"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredSavings
+            {/* Savings Tab */}
+            <TabsContent value="savings" className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold">Savings Management</h2>
+                <p className="text-muted-foreground">Add and manage savings entries for users</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Add Savings Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Plus className="h-5 w-5" />
+                      Add Savings Entry
+                    </CardTitle>
+                    <CardDescription>Log a new savings entry for any user</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddSaving} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="user">Select User</Label>
+                        <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a user" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.map((user) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                <div className="flex flex-col">
+                                  <span>{user.name || user.email}</span>
+                                  {user.name && <span className="text-xs text-muted-foreground">{user.email}</span>}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="amount">Amount (₦)</Label>
+                        <Input
+                          id="amount"
+                          type="number"
+                          step="0.01"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          placeholder="Enter amount"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Textarea
+                          id="description"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Add a note about this savings entry"
+                          rows={3}
+                        />
+                      </div>
+
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? "Adding..." : "Add Savings Entry"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {/* Recent Savings Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Recent Activity
+                    </CardTitle>
+                    <CardDescription>Latest savings entries across all users</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {allSavings
                         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                        .slice(0, 50)
+                        .slice(0, 5)
                         .map((saving) => (
-                          <TableRow key={saving.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium text-sm">{saving.user.name || "No name"}</p>
-                                <p className="text-xs text-muted-foreground">{saving.user.email}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="font-semibold text-green-600">
-                                ₦
+                          <div key={saving.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                            <div>
+                              <p className="font-medium text-sm">{saving.user.name || "No name"}</p>
+                              <p className="text-xs text-muted-foreground">{saving.description || "No description"}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(saving.createdAt), "MMM dd, yyyy")}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-green-600">
+                                +₦
                                 {saving.amount.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {saving.description || <span className="text-muted-foreground">No description</span>}
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm">{format(new Date(saving.createdAt), "MMM dd, yyyy")}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {format(new Date(saving.createdAt), "h:mm a")}
-                                </p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                              </p>
+                            </div>
+                          </div>
                         ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">Analytics & Insights</h2>
-              <p className="text-muted-foreground">Detailed analytics and performance metrics</p>
-            </div>
-
-            {analyticsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <Card key={i}>
-                    <CardContent className="p-6">
-                      <div className="animate-pulse space-y-2">
-                        <div className="h-4 bg-muted rounded w-3/4"></div>
-                        <div className="h-8 bg-muted rounded w-1/2"></div>
-                        <div className="h-3 bg-muted rounded w-full"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            ) : (
-              <>
-                {/* Enhanced Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{analytics?.totalUsers || totalUsers}</div>
-                      <p className="text-xs text-muted-foreground">Active savers on platform</p>
-                    </CardContent>
-                  </Card>
 
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        ₦
-                        {(analytics?.totalSavings || totalSavings).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Total platform savings</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Recent Savings</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        ₦
-                        {(analytics?.recentSavings || 0).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Last 30 days</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Average per User</CardTitle>
-                      <Target className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        ₦
-                        {(analytics?.averagePerUser || (totalUsers > 0 ? totalSavings / totalUsers : 0)).toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Per user average</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Savings Trend</CardTitle>
-                      <CardDescription>Monthly savings growth over time</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={{
-                          amount: {
-                            label: "Amount",
-                            color: "hsl(var(--chart-1))",
-                          },
-                        }}
-                        className="h-[300px]"
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line type="monotone" dataKey="amount" stroke="var(--color-amount)" strokeWidth={2} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Monthly Entries</CardTitle>
-                      <CardDescription>Number of savings entries per month</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={{
-                          count: {
-                            label: "Entries",
-                            color: "hsl(var(--chart-2))",
-                          },
-                        }}
-                        className="h-[300px]"
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Bar dataKey="count" fill="var(--color-count)" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Top Savers Table */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Top Performers</CardTitle>
-                    <CardDescription>Users with highest savings and most consistent activity</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+              {/* All Savings Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>All Savings Entries</CardTitle>
+                  <CardDescription>Complete history of all savings entries</CardDescription>
+                  <div className="flex items-center space-x-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search savings by description, amount, or user..."
+                      value={savingsSearch}
+                      onChange={(e) => setSavingsSearch(e.target.value)}
+                      className="max-w-sm"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Rank</TableHead>
                           <TableHead>User</TableHead>
-                          <TableHead>Total Savings</TableHead>
-                          <TableHead>Entries</TableHead>
-                          <TableHead>Goal Progress</TableHead>
-                          <TableHead>Frequency</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Date</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users
-                          .map((user) => ({
-                            ...user,
-                            totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
-                          }))
-                          .sort((a, b) => b.totalSavings - a.totalSavings)
-                          .slice(0, 10)
-                          .map((user, index) => {
-                            const progressPercentage = user.goal
-                              ? Math.min((user.totalSavings / user.goal) * 100, 100)
-                              : 0
-
-                            return (
-                              <TableRow key={user.id}>
-                                <TableCell>
-                                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
-                                    {index + 1}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>
-                                    <p className="font-medium">{user.name || "No name"}</p>
-                                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="font-semibold text-green-600">
-                                    ₦
-                                    {user.totalSavings.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </TableCell>
-                                <TableCell>{user.savings.length}</TableCell>
-                                <TableCell>
-                                  {user.goal ? (
-                                    <div className="space-y-1">
-                                      <Progress value={progressPercentage} className="w-20" />
-                                      <div className="text-xs text-muted-foreground">
-                                        {progressPercentage.toFixed(0)}%
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <span className="text-muted-foreground">No goal</span>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  {user.frequency ? (
-                                    <Badge variant="secondary">{user.frequency}</Badge>
-                                  ) : (
-                                    <span className="text-muted-foreground">Not set</span>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })}
+                        {filteredSavings
+                          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                          .slice(0, 50)
+                          .map((saving) => (
+                            <TableRow key={saving.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-sm">{saving.user.name || "No name"}</p>
+                                  <p className="text-xs text-muted-foreground">{saving.user.email}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="font-semibold text-green-600">
+                                  ₦
+                                  {saving.amount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                {saving.description || <span className="text-muted-foreground">No description</span>}
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="text-sm">{format(new Date(saving.createdAt), "MMM dd, yyyy")}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(saving.createdAt), "h:mm a")}
+                                  </p>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold">Analytics & Insights</h2>
+                <p className="text-muted-foreground">Detailed analytics and performance metrics</p>
+              </div>
+
+              {analyticsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="p-6">
+                        <div className="animate-pulse space-y-2">
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                          <div className="h-8 bg-muted rounded w-1/2"></div>
+                          <div className="h-3 bg-muted rounded w-full"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {/* Enhanced Stats Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{analytics?.totalUsers || totalUsers}</div>
+                        <p className="text-xs text-muted-foreground">Active savers on platform</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          ₦
+                          {(analytics?.totalSavings || totalSavings).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Total platform savings</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Recent Savings</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          ₦
+                          {(analytics?.recentSavings || 0).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Last 30 days</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Average per User</CardTitle>
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          ₦
+                          {(
+                            analytics?.averagePerUser || (totalUsers > 0 ? totalSavings / totalUsers : 0)
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Per user average</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Charts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Savings Trend</CardTitle>
+                        <CardDescription>Monthly savings growth over time</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer
+                          config={{
+                            amount: {
+                              label: "Amount",
+                              color: "hsl(var(--chart-1))",
+                            },
+                          }}
+                          className="h-[300px]"
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="month" />
+                              <YAxis />
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                              <Line type="monotone" dataKey="amount" stroke="var(--color-amount)" strokeWidth={2} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Monthly Entries</CardTitle>
+                        <CardDescription>Number of savings entries per month</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer
+                          config={{
+                            count: {
+                              label: "Entries",
+                              color: "hsl(var(--chart-2))",
+                            },
+                          }}
+                          className="h-[300px]"
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="month" />
+                              <YAxis />
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                              <Bar dataKey="count" fill="var(--color-count)" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Top Savers Table */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top Performers</CardTitle>
+                      <CardDescription>Users with highest savings and most consistent activity</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Rank</TableHead>
+                            <TableHead>User</TableHead>
+                            <TableHead>Total Savings</TableHead>
+                            <TableHead>Entries</TableHead>
+                            <TableHead>Goal Progress</TableHead>
+                            <TableHead>Frequency</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users
+                            .map((user) => ({
+                              ...user,
+                              totalSavings: user.savings.reduce((sum, saving) => sum + saving.amount, 0),
+                            }))
+                            .sort((a, b) => b.totalSavings - a.totalSavings)
+                            .slice(0, 10)
+                            .map((user, index) => {
+                              const progressPercentage = user.goal
+                                ? Math.min((user.totalSavings / user.goal) * 100, 100)
+                                : 0
+
+                              return (
+                                <TableRow key={user.id}>
+                                  <TableCell>
+                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                                      {index + 1}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium">{user.name || "No name"}</p>
+                                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="font-semibold text-green-600">
+                                      ₦
+                                      {user.totalSavings.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      })}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>{user.savings.length}</TableCell>
+                                  <TableCell>
+                                    {user.goal ? (
+                                      <div className="space-y-1">
+                                        <Progress value={progressPercentage} className="w-20" />
+                                        <div className="text-xs text-muted-foreground">
+                                          {progressPercentage.toFixed(0)}%
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span className="text-muted-foreground">No goal</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    {user.frequency ? (
+                                      <Badge variant="secondary">{user.frequency}</Badge>
+                                    ) : (
+                                      <span className="text-muted-foreground">Not set</span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
