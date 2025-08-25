@@ -123,6 +123,9 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState("overview");
   const [analytics, setAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [reportType, setReportType] = useState<
+    "financial" | "activity" | "export"
+  >("financial");
   const [editingSaving, setEditingSaving] = useState<null | {
     id: string;
     userId: string;
@@ -149,6 +152,13 @@ export default function AdminDashboard({
     const tab = urlParams.get("tab");
     if (tab) {
       setActiveTab(tab);
+    }
+    if (tab === "reports") {
+      const type = (urlParams.get("type") || "financial") as
+        | "financial"
+        | "activity"
+        | "export";
+      setReportType(type);
     }
   }, []);
 
@@ -435,6 +445,70 @@ export default function AdminDashboard({
       amount: Number(item.total) || 0,
       count: Number(item.count) || 0,
     })) || [];
+
+  // Helpers: CSV export
+  const downloadCsv = (filename: string, csv: string) => {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportUsersCsv = () => {
+    const headers = [
+      "id",
+      "name",
+      "email",
+      "phone",
+      "goal",
+      "frequency",
+      "totalSavings",
+      "entries",
+    ];
+    const rows = users.map((u) => {
+      const total = u.savings.reduce((s, sv) => s + sv.amount, 0);
+      return [
+        u.id,
+        u.name ?? "",
+        u.email ?? "",
+        u.phone ?? "",
+        u.goal ?? "",
+        u.frequency ?? "",
+        total,
+        u.savings.length,
+      ];
+    });
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    downloadCsv(`users_${new Date().toISOString()}.csv`, csv);
+  };
+
+  const exportSavingsCsv = () => {
+    const headers = [
+      "id",
+      "userId",
+      "userName",
+      "userEmail",
+      "amount",
+      "description",
+      "createdAt",
+    ];
+    const rows = allSavings.map((s) => [
+      s.id,
+      s.user.id,
+      s.user.name ?? "",
+      s.user.email ?? "",
+      s.amount,
+      (s.description ?? "").replace(/\n|\r|,/g, " "),
+      new Date(s.createdAt).toISOString(),
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    downloadCsv(`savings_${new Date().toISOString()}.csv`, csv);
+  };
 
   return (
     <SidebarProvider>
@@ -1829,6 +1903,380 @@ export default function AdminDashboard({
                     </CardContent>
                   </Card>
                 </>
+              )}
+            </TabsContent>
+
+            {/* Reports Tab */}
+            <TabsContent value="reports" className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">Reports</h2>
+                  <p className="text-muted-foreground">
+                    Financial, user activity, and export data
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={reportType}
+                    onValueChange={(value: any) => {
+                      setReportType(value);
+                      const params = new URLSearchParams(
+                        window.location.search
+                      );
+                      params.set("tab", "reports");
+                      params.set("type", value);
+                      window.history.replaceState(
+                        null,
+                        "",
+                        `?${params.toString()}`
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="w-44">
+                      <SelectValue placeholder="Select report" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="financial">Financial</SelectItem>
+                      <SelectItem value="activity">User Activity</SelectItem>
+                      <SelectItem value="export">Export Data</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {reportType === "financial" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Totals</CardTitle>
+                      <CardDescription>
+                        Overall financial snapshot
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Total Savings
+                        </span>
+                        <span className="font-semibold">
+                          ₦
+                          {totalSavings.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Average per User
+                        </span>
+                        <span className="font-semibold">
+                          ₦
+                          {(totalUsers > 0
+                            ? totalSavings / totalUsers
+                            : 0
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Users
+                        </span>
+                        <span className="font-semibold">{totalUsers}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Monthly Trend</CardTitle>
+                      <CardDescription>
+                        Monthly totals over time
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartContainer
+                        config={{
+                          amount: {
+                            label: "Amount",
+                            color: "hsl(var(--chart-1))",
+                          },
+                        }}
+                        className="h-[300px]"
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Line
+                              type="monotone"
+                              dataKey="amount"
+                              stroke="var(--color-amount)"
+                              strokeWidth={2}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="lg:col-span-2">
+                    <CardHeader>
+                      <CardTitle>Top Users by Total Savings</CardTitle>
+                      <CardDescription>
+                        Top 10 users with highest totals
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Total Savings</TableHead>
+                            <TableHead>Entries</TableHead>
+                            <TableHead>Goal Progress</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users
+                            .map((u) => ({
+                              ...u,
+                              total: u.savings.reduce(
+                                (s, sv) => s + sv.amount,
+                                0
+                              ),
+                            }))
+                            .sort((a, b) => b.total - a.total)
+                            .slice(0, 10)
+                            .map((u) => {
+                              const progress = u.goal
+                                ? Math.min((u.total / u.goal) * 100, 100)
+                                : 0;
+                              return (
+                                <TableRow key={u.id}>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium">
+                                        {u.name || "No name"}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {u.email}
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="font-semibold">
+                                      ₦
+                                      {u.total.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      })}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>{u.savings.length}</TableCell>
+                                  <TableCell>
+                                    {u.goal ? (
+                                      <div className="space-y-1">
+                                        <Progress
+                                          value={progress}
+                                          className="w-24"
+                                        />
+                                        <div className="text-xs text-muted-foreground">
+                                          {progress.toFixed(0)}%
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span className="text-muted-foreground">
+                                        No goal
+                                      </span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {reportType === "activity" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Recent Activity</CardTitle>
+                      <CardDescription>
+                        Latest 25 savings entries
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>User</TableHead>
+                              <TableHead>Amount</TableHead>
+                              <TableHead>Description</TableHead>
+                              <TableHead>Date</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {allSavings
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.createdAt).getTime() -
+                                  new Date(a.createdAt).getTime()
+                              )
+                              .slice(0, 25)
+                              .map((s) => (
+                                <TableRow key={s.id}>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium text-sm">
+                                        {s.user.name || "No name"}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {s.user.email}
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="font-semibold text-green-600">
+                                      ₦
+                                      {s.amount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      })}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    {s.description || (
+                                      <span className="text-muted-foreground">
+                                        No description
+                                      </span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <p className="text-sm">
+                                        {format(
+                                          new Date(s.createdAt),
+                                          "MMM dd, yyyy"
+                                        )}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {format(
+                                          new Date(s.createdAt),
+                                          "h:mm a"
+                                        )}
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Most Active Users</CardTitle>
+                      <CardDescription>
+                        Users with the most entries in last 30 days
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Entries (30d)</TableHead>
+                            <TableHead>Total Amount (30d)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users
+                            .map((u) => {
+                              const recent = u.savings.filter(
+                                (sv) =>
+                                  new Date(sv.createdAt).getTime() >
+                                  Date.now() - 30 * 24 * 60 * 60 * 1000
+                              );
+                              const total = recent.reduce(
+                                (s, sv) => s + sv.amount,
+                                0
+                              );
+                              return { u, count: recent.length, total };
+                            })
+                            .sort((a, b) => b.count - a.count)
+                            .slice(0, 10)
+                            .map(({ u, count, total }) => (
+                              <TableRow key={u.id}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">
+                                      {u.name || "No name"}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {u.email}
+                                    </p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>{count}</TableCell>
+                                <TableCell>
+                                  ₦
+                                  {total.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {reportType === "export" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Export Users</CardTitle>
+                      <CardDescription>
+                        Download all users as CSV
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button onClick={exportUsersCsv}>
+                        Download Users CSV
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Export Savings</CardTitle>
+                      <CardDescription>
+                        Download all savings as CSV
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button onClick={exportSavingsCsv}>
+                        Download Savings CSV
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
             </TabsContent>
           </Tabs>
