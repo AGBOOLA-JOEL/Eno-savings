@@ -192,71 +192,73 @@ export default function AdminReports({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Total Savings</TableHead>
-                    <TableHead>Entries</TableHead>
-                    <TableHead>Goal Progress</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users
-                    .map((u: any) => ({
-                      ...u,
-                      total: u.savings.reduce(
-                        (s: number, sv: any) => s + sv.amount,
-                        0
-                      ),
-                    }))
-                    .sort((a: any, b: any) => b.total - a.total)
-                    .slice(0, 10)
-                    .map((u: any) => {
-                      const progress = u.goal
-                        ? Math.min((u.total / u.goal) * 100, 100)
-                        : 0;
-                      return (
-                        <TableRow key={u.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">
-                                {u.name || "No name"}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {u.email}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-semibold">
-                              ₦
-                              {u.total.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </span>
-                          </TableCell>
-                          <TableCell>{u.savings.length}</TableCell>
-                          <TableCell>
-                            {u.goal ? (
-                              <div className="space-y-1">
-                                <Progress value={progress} className="w-24" />
-                                <div className="text-xs text-muted-foreground">
-                                  {progress.toFixed(0)}%
-                                </div>
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-max">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Total Savings</TableHead>
+                      <TableHead>Entries</TableHead>
+                      <TableHead>Goal Progress</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users
+                      .map((u: any) => ({
+                        ...u,
+                        total: u.savings.reduce(
+                          (s: number, sv: any) => s + sv.amount,
+                          0
+                        ),
+                      }))
+                      .sort((a: any, b: any) => b.total - a.total)
+                      .slice(0, 10)
+                      .map((u: any) => {
+                        const progress = u.goal
+                          ? Math.min((u.total / u.goal) * 100, 100)
+                          : 0;
+                        return (
+                          <TableRow key={u.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">
+                                  {u.name || "No name"}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {u.email}
+                                </p>
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                No goal
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-semibold">
+                                ₦
+                                {u.total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                               </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
+                            </TableCell>
+                            <TableCell>{u.savings.length}</TableCell>
+                            <TableCell>
+                              {u.goal ? (
+                                <div className="space-y-1">
+                                  <Progress value={progress} className="w-24" />
+                                  <div className="text-xs text-muted-foreground">
+                                    {progress.toFixed(0)}%
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  No goal
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -342,49 +344,56 @@ export default function AdminReports({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Entries (30d)</TableHead>
-                    <TableHead>Total Amount (30d)</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users
-                    .map((u) => {
-                      const recent = u.savings.filter(
-                        (sv) =>
-                          new Date(sv.createdAt).getTime() >
-                          Date.now() - 30 * 24 * 60 * 60 * 1000
-                      );
-                      const total = recent.reduce((s, sv) => s + sv.amount, 0);
-                      return { u, count: recent.length, total };
-                    })
-                    .sort((a, b) => b.count - a.count)
-                    .slice(0, 10)
-                    .map(({ u, count, total }) => (
-                      <TableRow key={u.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{u.name || "No name"}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {u.email}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{count}</TableCell>
-                        <TableCell>
-                          ₦
-                          {total.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-max">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Entries (30d)</TableHead>
+                      <TableHead>Total Amount (30d)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users
+                      .map((u) => {
+                        const recent = u.savings.filter(
+                          (sv) =>
+                            new Date(sv.createdAt).getTime() >
+                            Date.now() - 30 * 24 * 60 * 60 * 1000
+                        );
+                        const total = recent.reduce(
+                          (s, sv) => s + sv.amount,
+                          0
+                        );
+                        return { u, count: recent.length, total };
+                      })
+                      .sort((a, b) => b.count - a.count)
+                      .slice(0, 10)
+                      .map(({ u, count, total }) => (
+                        <TableRow key={u.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">
+                                {u.name || "No name"}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {u.email}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{count}</TableCell>
+                          <TableCell>
+                            ₦
+                            {total.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

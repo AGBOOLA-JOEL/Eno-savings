@@ -226,92 +226,94 @@ export default function AdminAnalytics({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rank</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Total Savings</TableHead>
-                    <TableHead>Entries</TableHead>
-                    <TableHead>Goal Progress</TableHead>
-                    <TableHead>Frequency</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users
-                    .map((user: any) => ({
-                      ...user,
-                      totalSavings: user.savings.reduce(
-                        (sum: number, s: any) => sum + s.amount,
-                        0
-                      ),
-                    }))
-                    .sort((a: any, b: any) => b.totalSavings - a.totalSavings)
-                    .slice(0, 10)
-                    .map((user: any, index: number) => {
-                      const progressPercentage = user.goal
-                        ? Math.min((user.totalSavings / user.goal) * 100, 100)
-                        : 0;
-                      return (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
-                              {index + 1}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">
-                                {user.name || "No name"}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {user.email}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-semibold text-green-600">
-                              ₦
-                              {user.totalSavings.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </span>
-                          </TableCell>
-                          <TableCell>{user.savings.length}</TableCell>
-                          <TableCell>
-                            {user.goal ? (
-                              <div className="space-y-1">
-                                <Progress
-                                  value={progressPercentage}
-                                  className="w-20"
-                                />
-                                <div className="text-xs text-muted-foreground">
-                                  {progressPercentage.toFixed(0)}%
-                                </div>
+              <div className="w-full overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Rank</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Total Savings</TableHead>
+                      <TableHead>Entries</TableHead>
+                      <TableHead>Goal Progress</TableHead>
+                      <TableHead>Frequency</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users
+                      .map((user: any) => ({
+                        ...user,
+                        totalSavings: user.savings.reduce(
+                          (sum: number, s: any) => sum + s.amount,
+                          0
+                        ),
+                      }))
+                      .sort((a: any, b: any) => b.totalSavings - a.totalSavings)
+                      .slice(0, 10)
+                      .map((user: any, index: number) => {
+                        const progressPercentage = user.goal
+                          ? Math.min((user.totalSavings / user.goal) * 100, 100)
+                          : 0;
+                        return (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                                {index + 1}
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                No goal
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">
+                                  {user.name || "No name"}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-semibold text-green-600">
+                                ₦
+                                {user.totalSavings.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                               </span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {user.frequency ? (
-                              <span className="inline-flex items-center rounded bg-muted px-2 py-1 text-xs">
-                                {user.frequency}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                Not set
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
+                            </TableCell>
+                            <TableCell>{user.savings.length}</TableCell>
+                            <TableCell>
+                              {user.goal ? (
+                                <div className="space-y-1">
+                                  <Progress
+                                    value={progressPercentage}
+                                    className="w-20"
+                                  />
+                                  <div className="text-xs text-muted-foreground">
+                                    {progressPercentage.toFixed(0)}%
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  No goal
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {user.frequency ? (
+                                <span className="inline-flex items-center rounded bg-muted px-2 py-1 text-xs">
+                                  {user.frequency}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  Not set
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </>

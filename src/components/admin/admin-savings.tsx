@@ -205,7 +205,7 @@ export default function AdminSavings({
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>

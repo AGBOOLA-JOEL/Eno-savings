@@ -131,8 +131,8 @@ export default function Home() {
               </SheetContent>
             </Sheet>
           </div>
-        </div>
-      </nav>
+          </div>
+        </nav>
 
       {/* Top Section */}
       <div className="flex flex-1 flex-col-reverse lg:flex-row items-center justify-between px-4 lg:px-16 py-8 gap-8 lg:gap-0">
@@ -168,7 +168,7 @@ export default function Home() {
                 rotationInterval={2000}
               />
               for a Brighter Future!
-            </h1>
+          </h1>
           </div>
           {/* Details */}
           <div className="mt-2 mb-2">
@@ -205,7 +205,7 @@ export default function Home() {
             />
           </div>
         </div>
-      </div>
+        </div>
 
       {/* Bottom Perks Section */}
       <div className="w-full bg-[hsl(var(--card))]/70 py-8 flex flex-col items-center justify-between ">
