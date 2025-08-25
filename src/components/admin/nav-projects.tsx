@@ -1,20 +1,11 @@
 "use client"
 
-import { type LucideIcon, MoreHorizontal, Plus } from "lucide-react"
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { type LucideIcon, Plus } from "lucide-react"
 import {
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
@@ -28,6 +19,11 @@ export function NavProjects({
     icon: LucideIcon
   }[]
 }) {
+  // Don't render anything if there are no projects
+  if (!projects || projects.length === 0) {
+    return null
+  }
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
@@ -44,26 +40,6 @@ export function NavProjects({
                 <span>{item.name}</span>
               </a>
             </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48 rounded-lg" side="bottom" align="end">
-                <DropdownMenuItem>
-                  <span>Execute Action</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>View Details</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <span>Configure</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </SidebarMenuItem>
         ))}
       </SidebarMenu>

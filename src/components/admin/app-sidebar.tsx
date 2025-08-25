@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { BarChart3, Users, Wallet, PiggyBank, TrendingUp, UserPlus, Activity, CreditCard, FileText } from "lucide-react"
+import { BarChart3, Users, Wallet, PiggyBank } from "lucide-react"
 
 import { NavMain } from "@/components/admin/nav-main"
 import { NavProjects } from "@/components/admin/nav-projects"
@@ -26,100 +26,22 @@ const data = {
   navMain: [
     {
       title: "Overview",
-      url: "/dashboard?tab=overview",
+      url: "/dashboard",
       icon: BarChart3,
       isActive: true,
-      items: [
-        {
-          title: "Dashboard",
-          url: "/dashboard?tab=overview",
-        },
-        {
-          title: "Analytics",
-          url: "/dashboard?tab=analytics",
-        },
-      ],
     },
     {
       title: "User Management",
-      url: "/dashboard?tab=users",
+      url: "/dashboard",
       icon: Users,
-      items: [
-        {
-          title: "All Users",
-          url: "/dashboard?tab=users",
-        },
-        {
-          title: "Add User",
-          url: "/dashboard?tab=users&action=add",
-        },
-        {
-          title: "User Reports",
-          url: "/dashboard?tab=users&view=reports",
-        },
-      ],
     },
     {
       title: "Savings Management",
-      url: "/dashboard?tab=savings",
+      url: "/dashboard",
       icon: Wallet,
-      items: [
-        {
-          title: "All Savings",
-          url: "/dashboard?tab=savings",
-        },
-        {
-          title: "Add Entry",
-          url: "/dashboard?tab=savings&action=add",
-        },
-        {
-          title: "Transactions",
-          url: "/dashboard?tab=savings&view=transactions",
-        },
-      ],
-    },
-    {
-      title: "Reports",
-      url: "/dashboard?tab=reports",
-      icon: FileText,
-      items: [
-        {
-          title: "Financial Reports",
-          url: "/dashboard?tab=reports&type=financial",
-        },
-        {
-          title: "User Activity",
-          url: "/dashboard?tab=reports&type=activity",
-        },
-        {
-          title: "Export Data",
-          url: "/dashboard?tab=reports&action=export",
-        },
-      ],
     },
   ],
-  projects: [
-    {
-      name: "Quick Actions",
-      url: "#",
-      icon: Activity,
-    },
-    {
-      name: "Add New User",
-      url: "#",
-      icon: UserPlus,
-    },
-    {
-      name: "Add Savings",
-      url: "#",
-      icon: CreditCard,
-    },
-    {
-      name: "View Analytics",
-      url: "#",
-      icon: TrendingUp,
-    },
-  ],
+  projects: [], // Remove all quick actions as they don't have implementations
 }
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {

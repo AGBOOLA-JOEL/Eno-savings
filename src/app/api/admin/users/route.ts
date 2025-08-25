@@ -1,21 +1,59 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
+import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!user || user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    const users = await prisma.user.findMany({
+      include: {
+        savings: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
+
+    return NextResponse.json({ users })
+  } catch (error) {
+    console.error("Users API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    // Check if user is admin
+    const adminUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     })
 
-    if (!user || user.role !== "ADMIN") {
+    if (!adminUser || adminUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -46,9 +84,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(newUser)
+    return NextResponse.json({ user: newUser })
   } catch (error) {
-    console.error("Create user error:", error)
+    console.error("Create user API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -57,15 +95,16 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    // Check if user is admin
+    const adminUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     })
 
-    if (!user || user.role !== "ADMIN") {
+    if (!adminUser || adminUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -87,9 +126,9 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(updatedUser)
+    return NextResponse.json({ user: updatedUser })
   } catch (error) {
-    console.error("Update user error:", error)
+    console.error("Update user API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -98,15 +137,16 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    // Check if user is admin
+    const adminUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     })
 
-    if (!user || user.role !== "ADMIN") {
+    if (!adminUser || adminUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -117,19 +157,19 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
     }
 
-    // Delete user's savings first
+    // Delete user's savings first (due to foreign key constraint)
     await prisma.saving.deleteMany({
       where: { userId },
     })
 
-    // Delete user
+    // Delete the user
     await prisma.user.delete({
       where: { id: userId },
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ message: "User deleted successfully" })
   } catch (error) {
-    console.error("Delete user error:", error)
+    console.error("Delete user API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

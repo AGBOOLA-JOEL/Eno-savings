@@ -1,17 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { ChevronsUpDown, type LucideIcon } from "lucide-react"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 
 export function TeamSwitcher({
@@ -19,12 +11,12 @@ export function TeamSwitcher({
 }: {
   teams: {
     name: string
-    logo: React.ElementType
+    logo: LucideIcon
     plan: string
   }[]
 }) {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  const [activeTeam] = React.useState(teams[0])
 
   return (
     <SidebarMenu>
@@ -51,23 +43,16 @@ export function TeamSwitcher({
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Platform</DropdownMenuLabel>
-            {teams.map((team, index) => (
-              <DropdownMenuItem key={team.name} onClick={() => setActiveTeam(team)} className="gap-2 p-2">
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
-                </div>
-                {team.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
+            {/* Only show current team since we don't have team switching functionality */}
+            <div className="flex items-center gap-2 p-2">
+              <div className="flex size-6 items-center justify-center rounded-sm border">
+                <activeTeam.logo className="size-4 shrink-0" />
               </div>
-              <div className="font-medium text-muted-foreground">Add workspace</div>
-            </DropdownMenuItem>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">{activeTeam.name}</span>
+                <span className="text-xs text-muted-foreground">{activeTeam.plan}</span>
+              </div>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

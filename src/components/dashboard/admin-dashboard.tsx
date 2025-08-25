@@ -97,13 +97,11 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
   const [showNewUserDialog, setShowNewUserDialog] = useState(false)
   const [showEditUserDialog, setShowEditUserDialog] = useState(false)
 
-  // Get active tab from URL params
+  // Get active tab from URL params or default to overview
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
-    const tab = urlParams.get("tab")
-    if (tab) {
-      setActiveTab(tab)
-    }
+    const tab = urlParams.get("tab") || "overview"
+    setActiveTab(tab)
   }, [])
 
   // Fetch analytics data
@@ -322,6 +320,14 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
       count: Number(item.count) || 0,
     })) || []
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    // Update URL without page reload
+    const url = new URL(window.location.href)
+    url.searchParams.set("tab", value)
+    window.history.pushState({}, "", url.toString())
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar currentUser={currentUser} />
@@ -349,7 +355,7 @@ export default function AdminDashboard({ users: initialUsers, currentUser }: Adm
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
