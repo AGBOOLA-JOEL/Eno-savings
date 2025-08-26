@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -151,21 +152,34 @@ export default function AdminDashboard({
   const [showNewUserDialog, setShowNewUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
 
-  // Get active tab from URL params
+  // Sync UI with URL params (tab, report type, quick actions)
+  const searchParams = useSearchParams();
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tab = urlParams.get("tab");
-    if (tab) {
-      setActiveTab(tab);
-    }
+    const tab = searchParams.get("tab") || "overview";
+    setActiveTab(tab);
+
     if (tab === "reports") {
-      const type = (urlParams.get("type") || "financial") as
+      const type = (searchParams.get("type") || "financial") as
         | "financial"
         | "activity"
         | "export";
       setReportType(type);
     }
-  }, []);
+
+    const action = searchParams.get("action");
+    if (tab === "users" && action === "add") {
+      setShowNewUserDialog(true);
+    }
+    if (tab === "savings" && action === "add") {
+      // Ensure the add form is in view on mobile
+      setTimeout(() => {
+        document.getElementById("add-savings-form")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 0);
+    }
+  }, [searchParams]);
 
   // Fetch analytics data
   useEffect(() => {
@@ -541,8 +555,8 @@ export default function AdminDashboard({
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-        </div>
-      </header>
+          </div>
+        </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <Tabs
             value={activeTab}

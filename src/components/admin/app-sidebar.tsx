@@ -1,13 +1,29 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import { BarChart3, Users, Wallet, PiggyBank, TrendingUp, UserPlus, Activity, CreditCard, FileText } from "lucide-react"
+import type * as React from "react";
+import {
+  BarChart3,
+  Users,
+  Wallet,
+  PiggyBank,
+  TrendingUp,
+  UserPlus,
+  Activity,
+  CreditCard,
+  FileText,
+} from "lucide-react";
 
-import { NavMain } from "@/components/admin/nav-main"
-import { NavProjects } from "@/components/admin/nav-projects"
-import { NavUser } from "@/components/admin/nav-user"
-import { TeamSwitcher } from "@/components/admin/team-switcher"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
+import { NavMain } from "@/components/admin/nav-main";
+import { NavProjects } from "@/components/admin/nav-projects";
+import { NavUser } from "@/components/admin/nav-user";
+import { TeamSwitcher } from "@/components/admin/team-switcher";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
+} from "@/components/ui/sidebar";
 
 // This is sample data.
 const data = {
@@ -101,32 +117,32 @@ const data = {
   projects: [
     {
       name: "Quick Actions",
-      url: "#",
+      url: "/dashboard?tab=overview",
       icon: Activity,
     },
     {
       name: "Add New User",
-      url: "#",
+      url: "/dashboard?tab=users&action=add",
       icon: UserPlus,
     },
     {
       name: "Add Savings",
-      url: "#",
+      url: "/dashboard?tab=savings&action=add",
       icon: CreditCard,
     },
     {
       name: "View Analytics",
-      url: "#",
+      url: "/dashboard?tab=analytics",
       icon: TrendingUp,
     },
   ],
-}
+};
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   currentUser?: {
-    name: string | null
-    email: string | null
-  }
+    name: string | null;
+    email: string | null;
+  };
 }
 
 export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
@@ -136,7 +152,7 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
         email: currentUser.email || "admin@enosavings.com",
         avatar: "/placeholder-user.jpg",
       }
-    : data.user
+    : data.user;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -152,5 +168,5 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

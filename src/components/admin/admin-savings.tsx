@@ -68,7 +68,7 @@ export default function AdminSavings({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Add Savings Form */}
-        <Card>
+        <Card id="add-savings-form">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" /> Add Savings Entry
