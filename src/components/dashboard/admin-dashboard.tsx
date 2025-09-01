@@ -114,6 +114,7 @@ interface AdminDashboardProps {
     name: string | null;
     email: string | null;
   };
+  analytics?: any; // <-- Add this line to accept analytics as an optional prop
 }
 
 export default function AdminDashboard({

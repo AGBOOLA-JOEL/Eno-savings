@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import UserDashboard from "@/components/dashboard/user-dashboard";
 import AdminDashboard from "@/components/dashboard/admin-dashboard";
-import axios from "axios";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
