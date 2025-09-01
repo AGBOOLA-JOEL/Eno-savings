@@ -43,6 +43,7 @@ import {
   Wallet,
   Activity,
   Target,
+  ArrowDownCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -91,6 +92,7 @@ import AdminUsers from "@/components/admin/admin-users";
 import AdminSavings from "@/components/admin/admin-savings";
 import AdminAnalytics from "@/components/admin/admin-analytics";
 import AdminReports from "@/components/admin/admin-reports";
+import AdminWithdrawal from "@/components/admin/admin-withdrawal";
 
 interface AdminDashboardProps {
   users: Array<{
@@ -198,6 +200,19 @@ export default function AdminDashboard({
     };
 
     fetchAnalytics();
+  }, []);
+
+  // Recent withdrawals state
+  const [recentWithdrawals, setRecentWithdrawals] = useState<any[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+
+  useEffect(() => {
+    setWithdrawalsLoading(true);
+    fetch("/api/admin/withdrawals")
+      .then((res) => res.json())
+      .then((data) => setRecentWithdrawals(data.withdrawals || []))
+      .catch(() => setRecentWithdrawals([]))
+      .finally(() => setWithdrawalsLoading(false));
   }, []);
 
   const totalUsers = users.length;
@@ -459,11 +474,16 @@ export default function AdminDashboard({
 
   // Chart data for analytics
   const chartData =
-    analytics?.monthlyData?.map((item: any) => ({
-      month: format(new Date(item.month), "MMM yyyy"),
-      amount: Number(item.total) || 0,
-      count: Number(item.count) || 0,
-    })) || [];
+    analytics?.monthlyData?.map((item: any) => {
+      let date = item.month ? new Date(item.month) : null;
+      let formattedMonth =
+        date && !isNaN(date.getTime()) ? format(date, "MMM yyyy") : "Invalid";
+      return {
+        month: formattedMonth,
+        amount: Number(item.total) || 0,
+        count: Number(item.count) || 0,
+      };
+    }) || [];
 
   // Helpers: CSV export
   const downloadCsv = (filename: string, csv: string) => {
@@ -590,7 +610,7 @@ export default function AdminDashboard({
               <AdminOverview
                 users={users}
                 totalUsers={totalUsers}
-                totalSavings={totalSavings}
+                totalSavings={analytics?.totalSavings ?? 0}
                 allSavings={allSavings}
                 showNewUserDialog={showNewUserDialog}
                 setShowNewUserDialog={setShowNewUserDialog}
@@ -600,6 +620,82 @@ export default function AdminDashboard({
                 handleCreateUser={handleCreateUser}
                 setActiveTab={setActiveTab}
               />
+              {/* Recent Withdrawals Section */}
+              <div className="mt-10">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ArrowDownCircle className="h-5 w-5 text-red-600" />{" "}
+                      Recent Withdrawals
+                    </CardTitle>
+                    <CardDescription>
+                      Latest 10 withdrawals across all users
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {withdrawalsLoading ? (
+                      <div>Loading...</div>
+                    ) : recentWithdrawals.length === 0 ? (
+                      <div className="text-muted-foreground text-sm">
+                        No withdrawals found.
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table className="min-w-max">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>User</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Amount</TableHead>
+                              <TableHead>Description</TableHead>
+                              <TableHead>Date</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {recentWithdrawals.slice(0, 10).map((w: any) => (
+                              <TableRow key={w.id}>
+                                <TableCell>
+                                  {w.user?.name || w.user?.email || "-"}
+                                </TableCell>
+                                <TableCell>{w.user?.email || "-"}</TableCell>
+                                <TableCell>
+                                  <span className="font-semibold text-red-600">
+                                    -₦
+                                    {w.amount.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </TableCell>
+                                <TableCell>
+                                  {w.description || (
+                                    <span className="text-muted-foreground">
+                                      No description
+                                    </span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <p className="text-sm">
+                                      {format(
+                                        new Date(w.createdAt),
+                                        "MMM dd, yyyy"
+                                      )}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {format(new Date(w.createdAt), "h:mm a")}
+                                    </p>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* Users Tab */}
@@ -653,7 +749,7 @@ export default function AdminDashboard({
                 analytics={analytics}
                 analyticsLoading={analyticsLoading}
                 totalUsers={totalUsers}
-                totalSavings={totalSavings}
+                totalSavings={analytics?.totalSavings ?? 0}
                 chartData={chartData}
                 users={users}
               />
@@ -665,12 +761,22 @@ export default function AdminDashboard({
                 users={users}
                 allSavings={allSavings}
                 totalUsers={totalUsers}
-                totalSavings={totalSavings}
+                totalSavings={analytics?.totalSavings ?? 0}
                 chartData={chartData}
                 reportType={reportType}
                 setReportType={setReportType}
                 exportUsersCsv={exportUsersCsv}
                 exportSavingsCsv={exportSavingsCsv}
+              />
+            </TabsContent>
+
+            {/* Withdrawals Tab */}
+            <TabsContent value="withdrawals" className="space-y-6">
+              <AdminWithdrawal
+                users={users}
+                loading={loading}
+                setLoading={setLoading}
+                toast={toast}
               />
             </TabsContent>
           </Tabs>

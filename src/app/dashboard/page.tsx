@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import UserDashboard from "@/components/dashboard/user-dashboard";
 import AdminDashboard from "@/components/dashboard/admin-dashboard";
+import axios from "axios";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -32,7 +33,20 @@ export default async function DashboardPage() {
       },
     });
 
-    return <AdminDashboard users={users} currentUser={user} />;
+    // Fetch analytics data from the API
+    const analyticsRes = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+      }/api/admin/analytics`,
+      {
+        cache: "no-store",
+      }
+    );
+    const analytics = analyticsRes.ok ? await analyticsRes.json() : null;
+
+    return (
+      <AdminDashboard users={users} currentUser={user} analytics={analytics} />
+    );
   }
 
   return <UserDashboard user={user} />;

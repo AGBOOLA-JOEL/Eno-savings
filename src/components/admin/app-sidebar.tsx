@@ -11,6 +11,7 @@ import {
   Activity,
   CreditCard,
   FileText,
+  DollarSign,
 } from "lucide-react";
 
 import { NavMain } from "@/components/admin/nav-main";
@@ -91,6 +92,21 @@ const data = {
         {
           title: "Transactions",
           url: "/dashboard?tab=savings&view=transactions",
+        },
+      ],
+    },
+    {
+      title: "Withdrawal Management",
+      url: "/dashboard?tab=withdrawals",
+      icon: DollarSign,
+      items: [
+        {
+          title: "Withdrawals",
+          url: "/dashboard?tab=withdrawals",
+        },
+        {
+          title: "Withdrawal History",
+          url: "/dashboard?tab=withdrawals&view=history",
         },
       ],
     },

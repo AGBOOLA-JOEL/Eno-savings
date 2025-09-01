@@ -55,11 +55,21 @@ model User {
   accounts      Account[]
   sessions      Session[]
   savings       Saving[]
+  withdrawals   Withdrawal[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
 model Saving {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Float
+  description String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Withdrawal {
   id          String   @id @default(cuid())
   userId      String
   amount      Float
