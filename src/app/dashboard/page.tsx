@@ -34,9 +34,7 @@ export default async function DashboardPage() {
 
     // Fetch analytics data from the API
     const analyticsRes = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-      }/api/admin/analytics`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/analytics`,
       {
         cache: "no-store",
       }
