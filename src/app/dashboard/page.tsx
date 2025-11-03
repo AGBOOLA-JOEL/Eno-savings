@@ -29,6 +29,7 @@ export default async function DashboardPage() {
     const users = await prisma.user.findMany({
       include: {
         savings: true,
+        withdrawals: true,
       },
     });
 

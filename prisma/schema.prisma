@@ -43,12 +43,12 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String       @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?      @unique
   emailVerified DateTime?
   image         String?
-  role          Role      @default(USER)
+  role          Role         @default(USER)
   phone         String?
   goal          Float?
   frequency     String?
@@ -56,8 +56,8 @@ model User {
   sessions      Session[]
   savings       Saving[]
   withdrawals   Withdrawal[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Saving {

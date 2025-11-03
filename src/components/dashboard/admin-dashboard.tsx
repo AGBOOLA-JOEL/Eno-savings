@@ -108,6 +108,12 @@ interface AdminDashboardProps {
       createdAt: Date;
       description: string | null;
     }>;
+    withdrawals?: Array<{
+      id: string;
+      amount: number;
+      createdAt: Date;
+      description: string | null;
+    }>;
   }>;
   currentUser: {
     id: string;

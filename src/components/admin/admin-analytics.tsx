@@ -240,13 +240,20 @@ export default function AdminAnalytics({
                   </TableHeader>
                   <TableBody>
                     {users
-                      .map((user: any) => ({
-                        ...user,
-                        totalSavings: user.savings.reduce(
+                      .map((user: any) => {
+                        const totalSaved = user.savings.reduce(
                           (sum: number, s: any) => sum + s.amount,
                           0
-                        ),
-                      }))
+                        );
+                        const totalWithdrawn = (user.withdrawals || []).reduce(
+                          (sum: number, w: any) => sum + w.amount,
+                          0
+                        );
+                        return {
+                          ...user,
+                          totalSavings: totalSaved - totalWithdrawn,
+                        };
+                      })
                       .sort((a: any, b: any) => b.totalSavings - a.totalSavings)
                       .slice(0, 10)
                       .map((user: any, index: number) => {
